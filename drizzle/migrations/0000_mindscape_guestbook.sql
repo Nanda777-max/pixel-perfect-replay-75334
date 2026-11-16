@@ -1,0 +1,18 @@
+CREATE TYPE public.app_role AS ENUM ('admin','moderator','user');
+CREATE TABLE public.user_roles (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,role public.app_role NOT NULL,UNIQUE(user_id,role));
+GRANT SELECT ON public.user_roles TO authenticated; GRANT ALL ON public.user_roles TO service_role;
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+CREATE FUNCTION public.has_role(_user_id uuid,_role public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles WHERE user_id=_user_id AND role=_role) $$;
+CREATE POLICY own_roles ON public.user_roles FOR SELECT TO authenticated USING(user_id=auth.uid());
+CREATE TABLE public.guestbook_notes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),name text NOT NULL CHECK(char_length(name) BETWEEN 1 AND 40),message text NOT NULL CHECK(char_length(message) BETWEEN 1 AND 280),colour text NOT NULL CHECK(colour IN ('sage','rose','butter')),approved boolean NOT NULL DEFAULT false,created_at timestamptz NOT NULL DEFAULT now(),expires_at timestamptz NOT NULL DEFAULT (now()+interval '7 days'));
+GRANT SELECT ON public.guestbook_notes TO anon,authenticated; GRANT UPDATE,DELETE ON public.guestbook_notes TO authenticated; GRANT ALL ON public.guestbook_notes TO service_role;
+ALTER TABLE public.guestbook_notes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY public_notes ON public.guestbook_notes FOR SELECT TO anon,authenticated USING(approved AND expires_at>now());
+CREATE POLICY moderator_read ON public.guestbook_notes FOR SELECT TO authenticated USING(public.has_role(auth.uid(),'admin') OR public.has_role(auth.uid(),'moderator'));
+CREATE POLICY moderator_update ON public.guestbook_notes FOR UPDATE TO authenticated USING(public.has_role(auth.uid(),'admin') OR public.has_role(auth.uid(),'moderator'));
+CREATE POLICY moderator_delete ON public.guestbook_notes FOR DELETE TO authenticated USING(public.has_role(auth.uid(),'admin') OR public.has_role(auth.uid(),'moderator'));
+CREATE TABLE public.submission_limits (fingerprint text PRIMARY KEY,last_at timestamptz NOT NULL DEFAULT now());
+GRANT ALL ON public.submission_limits TO service_role; ALTER TABLE public.submission_limits ENABLE ROW LEVEL SECURITY;
+CREATE FUNCTION public.claim_submission(key text) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE accepted text; BEGIN INSERT INTO public.submission_limits(fingerprint) VALUES(key) ON CONFLICT(fingerprint) DO UPDATE SET last_at=now() WHERE submission_limits.last_at<now()-interval '10 minutes' RETURNING fingerprint INTO accepted; RETURN accepted IS NOT NULL; END $$;
+REVOKE ALL ON FUNCTION public.claim_submission(text) FROM PUBLIC,anon,authenticated; GRANT EXECUTE ON FUNCTION public.claim_submission(text) TO service_role;
+CREATE INDEX guestbook_expiry ON public.guestbook_notes(expires_at);

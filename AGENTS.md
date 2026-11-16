@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Mindscape architecture
+- Keep portfolio data in `src/content` modules independent of the 3D scene so updates do not require geometry edits.
+- Mount React Three Fiber only on the client-rendered index route; SSR must not instantiate WebGL.
+- Use public read policies for approved unexpired notes; all submissions pass server validation and a database-backed limit before privileged writes.
+- Keep shared room materials and interface design tokens in the design system; local model assets must have CC0 provenance.

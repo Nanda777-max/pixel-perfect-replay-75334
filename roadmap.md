@@ -1,6 +1,10 @@
 # My Mindscape
-- [ ] Build and verify the explorable monsoon room.
-- [ ] Connect supplied portfolio content and intentional personal placeholders.
-- [ ] Add quick navigation, object views and mobile layout.
-- [ ] Configure shared guestbook and private feedback, or clearly report configuration blockers.
-- [ ] Document content updates and remaining placeholders.
+- [x] Build and verify the initial explorable monsoon room.
+- [x] Connect supplied professional content and intentional personal placeholders.
+- [x] Add quick navigation, object views and mobile layout.
+- [x] Configure shared guestbook validation, custom limit, review and seven-day expiry.
+- [x] Document content updates and remaining placeholders in CONTENT_GUIDE.md.
+- [ ] Private feedback — awaiting destination email and verified sending service.
+- [ ] Owner moderation sign-in — awaiting designated owner account.
+- [ ] Personal collections — awaiting favourite books, music, artwork, photographs and confirmed travel.
+- [ ] Character reference — awaiting supplied appearance and signature item.
