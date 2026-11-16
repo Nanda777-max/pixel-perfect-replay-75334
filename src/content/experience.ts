@@ -1,0 +1,7 @@
+import type { ContentSection } from "./types";
+
+// Edit this content independently of the room. [PLACEHOLDER] marks content not yet supplied.
+export const experience: ContentSection = {
+  "status": "placeholder",
+  "text": "Business Development Associate (Team Lead), KitaHQ, remote, Jun 2026 – Jul 2026, through the Monash–Warwick Alliance TeaMWork virtual internship\nLed a 7-person international team across Australia, the UK, Indonesia and Malaysia, coordinating B2B lead generation across four markets.\nIdentified 5,000+ qualified leads and drove 1,700+ outreach messages to HR and People & Culture decision-makers for KitaHQ's AI recruitment platform.\nTools: Apollo.io, FrappeCRM\nSystems Engineer, Tata Consultancy Services, Kolkata, India, Aug 2023 – Jun 2025\nDeveloped and maintained Java APIs and SQL batch data processes for a UK Government client, supporting reliable data flow across production systems.\nPartnered with cross-functional and third-party teams to integrate external systems, resolving data-exchange and reliability issues under live operational constraints.\nTools: Java, SQL, REST APIs\nFrontend Developer, Evoura Technologies, Kochi, India, Dec 2020 – Jan 2021\nBuilt responsive user-facing web interfaces in HTML, CSS and JavaScript (React) with design and backend teams, delivering features to tight deadlines.\nTools: HTML, CSS, JavaScript, React\nMemorabilia photo for the frame: [PLACEHOLDER] public/images/experience/tcs.jpg (no ID numbers visible)"
+};
