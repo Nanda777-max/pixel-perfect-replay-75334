@@ -20,12 +20,12 @@ import { pinNote } from '@/lib/guestbook.functions';
 import { noteSchema } from '@/lib/guestbook-schema';
 const source={about,projects,education,experience,research,skills,balcony};
 function TextContent({id}:{id:keyof typeof source}){
- const lines=source[id].text.split('\n').filter(l=>l.trim()&&!l.includes('[PLACEHOLDER]')&&!/^(Do not|Do NOT|Certificate image|Only |Use as |Category\s|Background text|Hometown|Memories|What I miss|Photos)/.test(l));
+ const lines=source[id].text.split('\n').filter(l=>l.trim()&&!l.includes('[PLACEHOLDER]')&&!/^(Do not|Do NOT|Certificate image|Only |Use as |Category\s|Hometown|Memories|What I miss|Photos)/.test(l));
  return <>{lines.map((line,i)=>{
  const urls=line.match(/https:\/\/[^\s·]+/g);
  if(urls)return <div className="content-block" key={i}>{urls.map(url=><a key={url} href={url} target="_blank" rel="noreferrer">{url.includes('ieee')?'Read on IEEE Xplore':url.includes('linkedin')?'LinkedIn':'View on GitHub'}<ArrowUpRight size={13}/></a>)}</div>;
  const heading=/^(Project \d|Master of |B.Tech|Business Development|Systems Engineer|Frontend Developer|Name:)/.test(line);
- return <div className="content-block" key={i}>{heading?<h3>{line.replace(/^Project \d: |Name: /,'')}</h3>:<p className={/^(Tech:|Tools:)/.test(line)?'tech':''}>{line.replace(/§16\.\d+/g,'').replace(/\(see .*?\)/g,'')}</p>}</div>;
+ return <div className="content-block" key={i}>{heading?<h3>{line.replace(/^Project \d: |Name: /,'')}</h3>:<p className={/^(Tech:|Tools:)/.test(line)?'tech':''}>{line.replace(/^Background text: /,'').replace(/§16\.\d+/g,'').replace(/\(see .*?\)/g,'')}</p>}</div>;
  })}{id==='projects'&&[1,2].map(n=><div className="placeholder-page" key={n}><Plus size={20}/><p>The next idea goes here.</p><small>Coming soon</small></div>)}</>;
 }
 function Guestbook(){const pin=useServerFn(pinNote);const [notes,setNotes]=useState<{id:string;name:string;message:string;colour:string}[]>([]);const [colour,setColour]=useState<'sage'|'rose'|'butter'>('butter');const [feedback,setFeedback]=useState('');const [busy,setBusy]=useState(false);const [privateForm,setPrivateForm]=useState(false);

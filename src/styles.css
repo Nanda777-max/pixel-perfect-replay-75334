@@ -11,3 +11,4 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .frame-text{width:240px;text-align:center;font-family:var(--font-display);font-size:24px;color:var(--foreground);padding:15px;pointer-events:none}
 @media(max-width:640px){.scene-wrap{top:210px;bottom:30px}.welcome{z-index:6}.weather-tag{top:160px;left:22px;right:auto}.room-stage{min-height:740px}.frame-text{font-size:20px}}
+.projected-label{position:absolute;top:0;left:0;pointer-events:none;z-index:4}.projected-label button{pointer-events:auto}.projected-label .frame-text{display:none}@media(max-width:640px){.weather-tag{top:218px}.scene-wrap{top:265px}.welcome p{max-width:260px}.room-stage{min-height:770px}}
