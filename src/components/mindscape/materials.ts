@@ -1,4 +1,7 @@
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from 'three';
+export function tokenColour(name:string) {
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=1;const ctx=canvas.getContext('2d');if(!ctx)return 'rgb(128,128,128)';ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--'+name).trim();ctx.fillRect(0,0,1,1);const pixel=ctx.getImageData(0,0,1,1).data;return `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
+}
 export function roomTexture(kind:'wood'|'paper'|'rug') {
  const canvas=document.createElement('canvas'); canvas.width=512;canvas.height=512;
  const ctx=canvas.getContext('2d'); if(!ctx)return new CanvasTexture(canvas);
