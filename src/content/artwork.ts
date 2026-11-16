@@ -1,7 +1,35 @@
-import type { ContentSection } from "./types";
-
-// Edit this content independently of the room. [PLACEHOLDER] marks content not yet supplied.
-export const artwork: ContentSection = {
-  "status": "placeholder",
-  "text": "[PLACEHOLDER] ×4 pieces. Fields: title, medium (photo / sketch / painting / digital), year, description (optional), image (public/artwork/<slug>.jpg).\nThe viewer must handle portrait, landscape and square images."
-};
+// TODO: Fill the required title and personal fields; optional images can stay null.
+export const artwork = [
+  {
+    "status": "placeholder",
+    "title": "",
+    "medium": "sketch",
+    "year": "",
+    "description": "",
+    "image": null
+  },
+  {
+    "status": "placeholder",
+    "title": "",
+    "medium": "sketch",
+    "year": "",
+    "description": "",
+    "image": null
+  },
+  {
+    "status": "placeholder",
+    "title": "",
+    "medium": "sketch",
+    "year": "",
+    "description": "",
+    "image": null
+  },
+  {
+    "status": "placeholder",
+    "title": "",
+    "medium": "sketch",
+    "year": "",
+    "description": "",
+    "image": null
+  }
+];
