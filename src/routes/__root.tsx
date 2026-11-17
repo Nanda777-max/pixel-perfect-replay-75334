@@ -96,7 +96,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      // Site icon: generated from public/nks-icon.png (see CONTENT_GUIDE.md). "?v=nks" busts old cached icons.
+      { rel: "icon", href: "/favicon.ico?v=nks", sizes: "any" },
+      { rel: "icon", href: "/nks-icon.png?v=nks", type: "image/png", sizes: "1024x1024" },
+      { rel: "icon", href: "/favicon-32.png?v=nks", type: "image/png", sizes: "32x32" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=nks" },
+      { rel: "manifest", href: "/site.webmanifest" },
     ],
   }),
   shellComponent: RootShell,

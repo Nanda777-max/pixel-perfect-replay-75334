@@ -111,7 +111,7 @@ export function drawResearchPreview() {
   for (let i = 0; i < 12; i++) line(left, py + 256 + i * 24, colW * (i % 4 === 3 ? 0.7 : 1));
   g.strokeStyle = '#9cb6c8'; g.lineWidth = 3; g.strokeRect(right, py + 222, colW, 170);
   g.strokeStyle = '#00629b'; g.lineWidth = 4; g.beginPath();
-  for (let i = 0; i <= 40; i++) { const x = right + 20 + (i / 40) * (colW - 40); const y = py + 330 - Math.sin(i / 6) * 40 * (1 - i / 60); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+  for (let i = 0; i <= 40; i++) { const x = right + 20 + (i / 40) * (colW - 40); const y = py + 330 - Math.sin(i / 6) * 40 * (1 - i / 60); if (i) g.lineTo(x, y); else g.moveTo(x, y); } g.stroke();
   for (let i = 0; i < 5; i++) line(right, py + 436 + i * 24, colW * (i === 4 ? 0.5 : 1));
   return c;
 }

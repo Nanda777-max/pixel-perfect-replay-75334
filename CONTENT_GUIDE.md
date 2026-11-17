@@ -30,7 +30,9 @@ You never need to edit anything in `src/components/`.
 | Journey frame photo | `public/images/experience/tcs.jpg` | none | Replaces the designed timeline on the wall and in the journey view. No ID numbers visible. |
 | Research figure | `public/images/projects/ieee-figure.png` | none | Replaces the designed paper preview on the wall and in the research view. |
 | Education / experience / balcony photos | `public/images/education/`, `…/experience/`, `…/balcony/` | none | Every image appears as a gallery in that panel, automatically. |
-| Book covers | `public/images/books/` | `books.ts` | Set an item's `image` to the cover path. |
+| Books and covers | `public/images/books/` | `books.ts` | Each entry is a book on the library shelf; `cover` shows the image on its front. |
+| Social links | none | `social.ts` | GitHub, LinkedIn and Instagram everywhere on the site. |
+| Site icon | `public/` | none | `nks-icon.png` and the sizes made from it. |
 
 Supported image formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.avif`. Keep images under about 1600 px on the long edge and strip location data first (see Privacy).
 
@@ -139,6 +141,40 @@ To add a new screenshot, add its filename to that `Images:` line. When a project
 
 ---
 
+## 14. Replace the site icon (favicon)
+- **The source** is `public/nks-icon.png` (square, 1024×1024). These are made from it and are what browsers use: `public/favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png`. `public/site.webmanifest` lists the two large ones for installed apps.
+- **To replace it:** save your new square PNG over `public/nks-icon.png` and ask me (or any developer) to regenerate the five sizes, or make them with an online favicon generator and replace the files with the same names.
+- **To make browsers drop the cached old icon:** change `?v=nks` to something new (for example `?v=nks2`) in `src/routes/__root.tsx` and `pages/index.html`. Browsers cache icons hard; a private window shows the new one straight away.
+
+## 15. GitHub avatar and social links
+- **Social links** live only in `src/content/social.ts`. Change a `url` or `handle` there and the header, the menu, the About panel and the laptop workspace all update. The order of the list is the order on the site.
+- **The GitHub avatar** in the laptop workspace is `githubAvatar` in the same file. It points to GitHub's own copy of your profile picture (by your account number), so changing your picture on GitHub updates the site automatically. To use a different image instead, put it in `public/images/profile/` and set `githubAvatar` to that path, for example `'/images/profile/github-avatar.jpg'`. Your website portrait (`public/images/profile/portrait.jpg`) is separate and unaffected.
+
+## 16. Add a book to the library
+Each entry in `src/content/books.ts` is one book on the shelf, in order. Replace a placeholder entry (one with `"title": ""`) with your book:
+
+```ts
+{
+  "status": "ready",
+  "title": "Thinking, Fast and Slow",
+  "author": "Daniel Kahneman",
+  "category": "Favourite books",
+  "whyIChoseIt": "Why it made the shelf.",
+  "favouriteIdea": "The idea that stayed with me, in a sentence or two.",
+  "reflection": "What I took from it.",
+  "cover": "/images/books/thinking-fast-and-slow.jpg"
+},
+```
+
+- A book with a `title` shows it on its spine and its cover; leave `title` empty to keep a "Still choosing" placeholder book on the shelf.
+- Any field you leave empty is simply left out when the book is opened. Nothing is filled in for you.
+- `favouriteIdea` appears as the quote on the right-hand page; `whyIChoseIt` and `reflection` appear beside the open book.
+- If books have more than one `category`, category buttons appear above the shelf automatically.
+- To add a seventh book, copy any entry and add it to the list.
+
+## 17. Add a book cover
+Save the cover (portrait shape, about 600×900, JPG or WebP) in `public/images/books/`, for example `thinking-fast-and-slow.jpg`, and set that book's `"cover"` to `"/images/books/thinking-fast-and-slow.jpg"`. Without a cover, the book gets a designed cloth cover with its title and author.
+
 ## The GitHub Pages copy
 `.github/workflows/pages.yml` publishes a static copy of the site at `https://nanda777-max.github.io/pixel-perfect-replay-75334/` every time `main` changes, about two minutes after a push. It only runs while the repository is public. On that copy, visitors can read approved guestbook notes but can't post new ones, because GitHub Pages can't run the server code that saves them. Everything else works the same.
 
@@ -161,4 +197,4 @@ Database configuration is managed by Lovable Cloud; do not paste privileged cred
 Private sending is disabled. Configure `CONTACT_TO_EMAIL` through Secrets, and configure a verified sending service before implementing delivery. No destination address belongs in public content or repository code. No submission is claimed to have been sent. Optional `CONTACT_FROM_EMAIL` must be a verified sender. Email delivery implementation and its end-to-end test remain open.
 
 ## Still not built
-Character model and reactions, football physics, animated book opening, secure private email and an owner moderation screen.
+Character model and reactions, football physics, secure private email and an owner moderation screen.

@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowUpRight, BookOpen, Code2, FileText, Github, Image as Im
 import { SafeImage } from './SafeImage';
 import { parseProjects, type ProjectInfo } from '@/content/parse';
 import { about } from '@/content/about';
-import { portraitImage } from '@/content/media';
+import { github, githubAvatar } from '@/content/social';
 
 type Tab = 'code' | 'overview' | 'readme' | 'results' | 'visuals';
 const TABS: { id: Tab; label: string; icon: typeof Code2 }[] = [
@@ -15,6 +15,11 @@ const TABS: { id: Tab; label: string; icon: typeof Code2 }[] = [
   { id: 'results', label: 'Results', icon: LineChart },
   { id: 'visuals', label: 'Visualisations', icon: ImageIcon },
 ];
+/** My GitHub avatar (src/content/social.ts), with initials if it can't load. */
+function Avatar({ size, name }: { size: 'sm' | 'lg'; name: string }) {
+  const initials = name.split(/[\s-]+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  return <SafeImage src={githubAvatar} alt={size === 'lg' ? `GitHub avatar of ${github.handle}` : ''} fit="cover" ratio="1 / 1" className={`gh-avatar gh-avatar-${size}`} eager fallback={<div className={`gh-avatar gh-avatar-${size} gh-avatar-initials`} aria-hidden>{initials}</div>} />;
+}
 const LANG_COLOURS = ['#3572A5', '#e34c26', '#f1e05a', '#b07219', '#563d7c', '#89e051'];
 const aboutField = (key: string) => about.text.match(new RegExp(`^${key}: (.*)$`, 'm'))?.[1]?.trim();
 
@@ -43,7 +48,7 @@ function RepoView({ p, owner, tab, setTab }: { p: ProjectInfo; owner: string; ta
   </aside>;
   return <div className="gh-repo">
     <div className="gh-repo-head">
-      <div className="gh-repo-title"><BookOpen size={18} /><span className="gh-owner">{owner}</span><span className="gh-sep">/</span><strong>{p.slug}</strong>{p.github && <span className="gh-badge">Public</span>}</div>
+      <div className="gh-repo-title"><BookOpen size={18} /><Avatar size="sm" name={owner} /><span className="gh-owner">{owner}</span><span className="gh-sep">/</span><strong>{p.slug}</strong>{p.github && <span className="gh-badge">Public</span>}</div>
       <h1>{p.title}</h1>
       {p.overview && <p className="gh-desc">{p.overview}</p>}
       <LinkButtons p={p} />
@@ -90,7 +95,7 @@ function RepoView({ p, owner, tab, setTab }: { p: ProjectInfo; owner: string; ta
 
 export default function ProjectsWorkspace({ onClose }: { onClose: () => void }) {
   const { projects, comingSoon } = useMemo(() => parseProjects(), []);
-  const owner = useMemo(() => projects.find(p => p.github)?.github?.split('/')[3] ?? 'projects', [projects]);
+  const owner = github.handle;
   const [selected, setSelected] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('code');
   const [query, setQuery] = useState('');
@@ -101,7 +106,7 @@ export default function ProjectsWorkspace({ onClose }: { onClose: () => void }) 
   }, [onClose]);
   const open = (id: string) => { setSelected(id); setTab('code'); };
   const filtered = projects.filter(p => !query || `${p.title} ${p.slug} ${p.tech.join(' ')}`.toLowerCase().includes(query.toLowerCase()));
-  const name = aboutField('Name'); const headline = aboutField('Headline'); const portrait = portraitImage();
+  const name = aboutField('Name'); const headline = aboutField('Headline');
 
   return <div className="ws-shade" onClick={onClose}>
     <section className="ws-window" role="dialog" aria-modal="true" aria-label="Things I’ve built" onClick={e => e.stopPropagation()}>
@@ -112,6 +117,7 @@ export default function ProjectsWorkspace({ onClose }: { onClose: () => void }) 
       </div>
       <header className="gh-nav">
         <Github size={28} className="gh-mark" />
+        <Avatar size="sm" name={name ?? owner} />
         <nav className="gh-crumbs" aria-label="Breadcrumb">
           <button onClick={() => setSelected(null)} className={project ? '' : 'gh-crumb-current'}>{owner}</button>
           {project && <><span>/</span><span className="gh-crumb-current">{project.slug}</span></>}
@@ -122,11 +128,11 @@ export default function ProjectsWorkspace({ onClose }: { onClose: () => void }) 
       <div className="ws-body">
         {project ? <RepoView p={project} owner={owner} tab={tab} setTab={setTab} /> : <div className="gh-profile-layout">
           <aside className="gh-profile">
-            <SafeImage src={portrait} alt={name ?? 'Profile photo'} fit="cover" ratio="1 / 1" className="gh-avatar" fallback={<div className="gh-avatar gh-avatar-initials" aria-hidden>{(name ?? owner).split(' ').map(w => w[0]).slice(0, 2).join('')}</div>} />
+            <Avatar size="lg" name={name ?? owner} />
             {name && <h2>{name}</h2>}
             <p className="gh-handle">{owner}</p>
             {headline && <p className="gh-bio">{headline}</p>}
-            <a className="gh-btn gh-btn-block" href={`https://github.com/${owner}`} target="_blank" rel="noreferrer"><Github size={15} />GitHub profile<ArrowUpRight size={13} /></a>
+            <a className="gh-btn gh-btn-block" href={github.url} target="_blank" rel="noreferrer"><Github size={15} />GitHub profile<ArrowUpRight size={13} /></a>
           </aside>
           <div className="gh-repos">
             <div className="gh-repos-head"><BookOpen size={16} /><strong>Repositories</strong><span className="gh-count">{projects.length}</span></div>
