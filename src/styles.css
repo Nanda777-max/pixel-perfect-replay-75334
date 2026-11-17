@@ -114,3 +114,27 @@
 @media(max-width:860px){.gh-profile-layout{grid-template-columns:1fr;gap:20px}.gh-profile{display:grid;grid-template-columns:72px 1fr;column-gap:16px;align-items:center}.gh-profile .gh-avatar{grid-row:span 2;width:72px}.gh-profile h2{margin:0;font-size:18px}.gh-profile .gh-bio,.gh-profile .gh-btn-block{grid-column:1 / -1}.gh-code-layout{grid-template-columns:1fr}}
 @media(max-width:640px){.gh-crumbs{font-size:13px}.ws-shade,.fv-shade{padding:0}.ws-window{border-width:0;border-radius:0;height:100%}.ws-close span,.ws-dots{display:none}.gh-nav{padding:10px 14px}.gh-search{width:auto;flex:1}.gh-profile-layout,.gh-tab-body{padding:18px 16px 32px}.gh-repo-head{padding:18px 16px 10px}.gh-repo-head h1{font-size:21px}.gh-tabs{padding:0 8px}.gh-readme{padding:16px}.gh-open{margin-left:0}
 .fv-window{border-radius:0;height:100%;box-shadow:none}.fv-window .panel-header>button:first-child{display:none}.fv-body{padding:18px 16px 36px}.fv-card{padding:18px 16px}.fv-card-head{grid-template-columns:auto 1fr}.fv-dates{grid-column:1 / -1;align-items:flex-start;flex-direction:row;text-align:left}.fv-title h2{font-size:24px}}
+
+/* ── Glass welcome card and viewport-fitting room (stage 3 fixes) ─ */
+.welcome,.weather-tag{background:color-mix(in oklch,var(--background) 55%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15);border:1px solid color-mix(in oklch,white 60%,transparent);box-shadow:0 14px 40px oklch(.3 .03 90 / .12),inset 0 1px 0 oklch(1 0 0 / .55)}
+.welcome{padding:24px 30px 22px;border-radius:18px;max-width:430px;pointer-events:auto;touch-action:pan-y}
+.welcome h1{margin:14px 0 12px}.welcome p{max-width:340px;color:color-mix(in oklch,var(--foreground) 78%,transparent)}
+.weather-tag{padding:10px 14px;border-radius:12px}
+/* The room always fits the screen, leaving the discovery band peeking below to show there's more. */
+.room-stage{flex:none;min-height:0;height:max(520px,calc(100svh - 88px - 40px))}
+@media(max-width:640px){
+ .room-stage{min-height:0;height:calc(100svh - 74px - 30px)}
+ .scene-wrap{top:0;bottom:0}
+ .welcome{left:12px;right:12px;top:12px;padding:14px 18px 14px;max-width:none;border-radius:16px}
+ .welcome .eyebrow{font-size:9px}.welcome h1{font-size:34px;margin:8px 0 6px}.welcome p{font-size:11.5px;line-height:1.6;max-width:none}
+ .weather-tag{display:none}
+ .room-label{display:none}.room-tools{right:12px;bottom:12px}
+}
+@media(max-height:520px) and (orientation:landscape){
+ .site-header{height:56px}
+ .room-stage{min-height:0;height:calc(100svh - 56px - 26px)}
+ .scene-wrap{top:0;bottom:0}
+ .welcome{top:10px;left:12px;right:auto;padding:10px 16px;max-width:260px;border-radius:14px}
+ .welcome .eyebrow{display:none}.welcome h1{font-size:26px;margin:0 0 4px}.welcome p{font-size:10.5px;line-height:1.5}
+ .weather-tag,.room-label{display:none}.room-tools{right:12px;bottom:10px}
+}

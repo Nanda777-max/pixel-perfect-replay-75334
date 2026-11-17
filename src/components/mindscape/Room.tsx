@@ -36,12 +36,24 @@ function Model({url,position,height,rotation=0,onClick,label='Take a closer look
 function Block({at,size,colour,rotation,texture}:{at:Vec;size:Vec;colour:string;rotation?:Vec;texture?:ReturnType<typeof roomTexture>}){return <mesh position={at} rotation={rotation??[0,0,0]} castShadow receiveShadow><boxGeometry args={size}/><meshStandardMaterial color={colour} map={texture??null} roughness={.85}/></mesh>;}
 function ObjectGroup({id,at,children,onSelect,label}:{id:Section;at:Vec;children:React.ReactNode;onSelect:(id:Section)=>void;label:string}){const [hover,setHover]=useState(false);return <group position={at} onClick={e=>{e.stopPropagation();onSelect(id);}} onPointerOver={e=>{e.stopPropagation();setHover(true);document.body.style.cursor='pointer';}} onPointerOut={()=>{setHover(false);document.body.style.cursor='auto';}}>{children}{hover&&<SceneLabel position={[0,.5,0]}><div className="tooltip-label">{label}</div></SceneLabel>}</group>;}
 function Hotspot({at,id,onSelect,label}:{at:Vec;id:Section;onSelect:(id:Section)=>void;label:string}){return <SceneLabel position={at}><Button className="scene-hotspot" aria-label={label} title={label} onClick={()=>onSelect(id)}>+</Button></SceneLabel>;}
-function CameraRig({reset,zoom,selected}:Pick<RoomProps,'reset'|'zoom'|'selected'>){const controls=useRef<OrbitControlsImpl>(null);const {camera,size}=useThree();const tween=useRef<{target:Vector3;position:Vector3}|null>(null);const mobile=size.width<640;const initial=useMemo(()=>new Vector3(mobile?12:10,mobile?11:8,mobile?15:11),[mobile]);
- useEffect(()=>{tween.current={target:new Vector3(0,1.2,-.4),position:initial.clone()};},[reset,initial]);
+// Pan and zoom stay inside the room, so the camera can't wander off and lose it.
+const ROOM_MIN=new Vector3(-3.8,.2,-3.2),ROOM_MAX=new Vector3(3.8,3.2,3);
+function CameraRig({reset,zoom,selected}:Pick<RoomProps,'reset'|'zoom'|'selected'>){const controls=useRef<OrbitControlsImpl>(null);const {camera,size}=useThree();const tween=useRef<{target:Vector3;position:Vector3}|null>(null);
+ // Phones in portrait: aim a little higher so the room sits below the welcome card.
+ const portraitPhone=size.width<640&&size.height>size.width;const mobile=size.width<640;
+ // Short landscape screens: shift the room right, clear of the welcome card on the left.
+ const shortLandscape=size.height<520&&size.width>size.height;
+ const home=useMemo(()=>new Vector3(shortLandscape?-1.4:0,portraitPhone?3.3:1.2,-.4),[portraitPhone,shortLandscape]);
+ // Fit the whole room to the screen's width: a narrow, tall screen needs the camera further back.
+ const aspect=size.width/Math.max(size.height,1);
+ const distance=Math.min(36,Math.max(16.9,6/(Math.tan(19*Math.PI/180)*aspect)));
+ const initial=useMemo(()=>(mobile?new Vector3(12,11,15):new Vector3(10,8,11)).normalize().multiplyScalar(distance).add(home),[mobile,home,distance]);
+ useEffect(()=>{tween.current={target:home.clone(),position:initial.clone()};},[reset,initial,home]);
  useEffect(()=>{if(!controls.current)return;camera.position.sub(controls.current.target).multiplyScalar(zoom>0?.87:1.15).add(controls.current.target);controls.current.update();},[zoom,camera]);
  useEffect(()=>{if(!selected)return;const point=focusPoints[selected];if(!point)return;const target=new Vector3(...point);const direction=camera.position.clone().sub(target).normalize();tween.current={target,position:target.clone().add(direction.multiplyScalar(7))};},[selected,camera]);
  useFrame((_,dt)=>{if(!controls.current||!tween.current)return;const {position,target}=tween.current;const a=1-Math.exp(-4*Math.min(dt,.05));camera.position.lerp(position,a);controls.current.target.lerp(target,a);controls.current.update();if(camera.position.distanceTo(position)<.03)tween.current=null;});
- return <OrbitControls ref={controls} makeDefault target={[0,1.2,-.4]} enablePan={false} minDistance={7} maxDistance={24} minPolarAngle={.35} maxPolarAngle={1.35} minAzimuthAngle={-.9} maxAzimuthAngle={1.35} enableDamping dampingFactor={.08} onStart={()=>{tween.current=null;}}/>;
+ const clamp=()=>{const c=controls.current;if(!c||tween.current)return;const t=c.target;const before=t.clone();t.clamp(ROOM_MIN,ROOM_MAX);if(!before.equals(t))camera.position.add(t.clone().sub(before));};
+ return <OrbitControls ref={controls} makeDefault target={home.toArray()} enablePan screenSpacePanning zoomToCursor panSpeed={.8} minDistance={4} maxDistance={Math.max(26,distance+4)} minPolarAngle={.35} maxPolarAngle={1.35} minAzimuthAngle={-.9} maxAzimuthAngle={1.35} enableDamping dampingFactor={.08} onStart={()=>{tween.current=null;}} onChange={clamp}/>;
 }
 function Scene(props:RoomProps&{ready:()=>void;reduced:boolean}){const {onSelect,evening,lampOn,onLamp,reduced}=props;const [colours]=useState(()=>Object.fromEntries(['wood','wood-light','room-wall','sage','rose','butter','ink','paper','scene-background'].map(k=>[k,new Color(tokenColour(k))])));const c=(k:string)=>colours[k]?.getStyle()??'white';const textures=useMemo(()=>({wood:roomTexture('wood'),paper:roomTexture('paper'),rug:roomTexture('rug')}),[]);const ready=useRef(false);
  useFrame(()=>{if(!ready.current){ready.current=true;requestAnimationFrame(props.ready);}});

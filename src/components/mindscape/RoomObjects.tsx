@@ -11,7 +11,7 @@ import { existingImage, portraitImage, withBase } from '@/content/media';
 import { useMusicPlayer } from '@/lib/music-player';
 import { drawWorldMap, loadCountries } from '@/lib/countries';
 import type { Section } from '@/content/room';
-import { drawLaptopScreen, fontsReady } from './frameArt';
+import { fontsReady } from './frameArt';
 
 type Vec = [number, number, number];
 /** Warm 2700–3000 K lamp colour. */
@@ -204,11 +204,14 @@ export function FramedDisplay({ id, position, label, draw, photo, onSelect }: { 
   </group>;
 }
 
-/** The laptop screen overlay, in the laptop model's own units (see Room's Model). */
+/** The laptop screen: a lightweight lock-screen JPG (public/images/laptop-lock.jpg). */
 export function LaptopScreen() {
-  const screen = useDrawnTexture(drawLaptopScreen);
-  // Inner screen corners in the Kenney laptop model: x 0.04–0.56, from (y .067, z −.384) to (y .331, z −.502).
-  return <mesh position={[0, 0.199, -0.443 + 0.2728]} rotation={[-0.424, 0, 0]} renderOrder={1}>
-    <planeGeometry args={[0.52, 0.289]} /><meshBasicMaterial map={screen} color={screen ? '#ffffff' : '#0d1117'} toneMapped={false} polygonOffset polygonOffsetFactor={-2} />
-  </mesh>;
+  const screen = useSafeTexture(withBase('/images/laptop-lock.jpg'));
+  // Kenney laptop: the file scales its mesh by 0.44. Inner screen corners in raw mesh units run
+  // x 0.04–0.56, from (y .067, z −.384) up to (y .331, z −.502); the lid faces (0, .41, .91).
+  return <group scale={0.44}>
+    <mesh position={[0.3, 0.199, -0.443]} rotation={[-0.424, 0, 0]} renderOrder={1}>
+      <planeGeometry args={[0.52, 0.289]} /><meshBasicMaterial map={screen} color={screen ? '#ffffff' : '#1d2f2a'} toneMapped={false} polygonOffset polygonOffsetFactor={-2} />
+    </mesh>
+  </group>;
 }

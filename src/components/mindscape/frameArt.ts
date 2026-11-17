@@ -1,6 +1,6 @@
 // Artwork drawn for the framed displays and the laptop screen, from the content files.
 // Kept deliberately simple: the frame says what it is; the opened view holds the detail.
-import { parseEducation, parseExperience, parseProjects, parseResearch } from '@/content/parse';
+import { parseEducation, parseExperience, parseResearch } from '@/content/parse';
 
 const SERIF = "'Cormorant Garamond', Georgia, serif";
 const SANS = "'DM Sans', system-ui, sans-serif";
@@ -113,27 +113,5 @@ export function drawResearchPreview() {
   g.strokeStyle = '#00629b'; g.lineWidth = 4; g.beginPath();
   for (let i = 0; i <= 40; i++) { const x = right + 20 + (i / 40) * (colW - 40); const y = py + 330 - Math.sin(i / 6) * 40 * (1 - i / 60); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
   for (let i = 0; i < 5; i++) line(right, py + 436 + i * 24, colW * (i === 4 ? 0.5 : 1));
-  return c;
-}
-
-/** The laptop's screen: a dark developer workspace listing the real project names. */
-export function drawLaptopScreen() {
-  const [c, g] = canvas(1024, 576); const W = c.width, H = c.height;
-  const { projects } = parseProjects();
-  g.fillStyle = '#0d1117'; g.fillRect(0, 0, W, H);
-  g.fillStyle = '#161b22'; g.fillRect(0, 0, W, 76);
-  g.fillStyle = '#f0f6fc'; g.beginPath(); g.arc(52, 38, 20, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#0d1117'; g.beginPath(); g.arc(52, 34, 9, 0, Math.PI * 2); g.fill(); g.fillRect(47, 40, 10, 14);
-  g.fillStyle = '#e6edf3'; g.font = `600 28px ${SANS}`; g.textAlign = 'left'; g.fillText('Nanda777-max', 90, 48);
-  g.fillStyle = '#8b949e'; g.font = `500 22px ${SANS}`; g.fillText('Repositories', 90, 126);
-  projects.slice(0, 3).forEach((p, i) => {
-    const y = 160 + i * 128;
-    g.strokeStyle = '#30363d'; g.lineWidth = 2; g.beginPath(); g.roundRect(40, y, W - 80, 108, 12); g.stroke();
-    g.fillStyle = '#4493f8'; fitText(g, p.slug, 70, y + 46, W - 300, 30, s => `600 ${s}px ${SANS}`);
-    g.strokeStyle = '#3d444d'; g.beginPath(); g.roundRect(W - 190, y + 22, 110, 34, 17); g.stroke();
-    g.fillStyle = '#8b949e'; g.font = `500 18px ${SANS}`; g.textAlign = 'center'; g.fillText('Public', W - 135, y + 45); g.textAlign = 'left';
-    g.fillStyle = ['#3fb950', '#d29922', '#a371f7'][i % 3]!; g.beginPath(); g.arc(80, y + 80, 8, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#8b949e'; fitText(g, p.tech.slice(0, 3).join(' · '), 98, y + 87, W - 200, 20, s => `400 ${s}px ${SANS}`);
-  });
   return c;
 }
