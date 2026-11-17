@@ -25,7 +25,10 @@ You never need to edit anything in `src/components/`.
 | Visited countries | none | `travel.ts` | `visited: true` highlights the whole country on both globes. |
 | Music | `public/images/music/` (covers), `public/audio/` (audio) | `music.ts` | Each entry becomes an album card. Needs an entry. |
 | Artwork | `public/artwork/` | `artwork.ts` | Shows the image in the easel panel. Needs the `image` field. |
-| Project screenshots | `public/images/projects/` | none | Every image appears as a gallery in "Things I've built", automatically. |
+| Project screenshots | `public/images/projects/` | `projects.ts` (`Images:` line) | Files named on a project's `Images:` line appear in its **Visualisations** tab in the laptop workspace. Any image in the folder also shows as a gallery. |
+| Education frame photo | `public/images/education/monash.jpg` | none | Replaces the designed certificate-style card on the wall and in the education view. |
+| Journey frame photo | `public/images/experience/tcs.jpg` | none | Replaces the designed timeline on the wall and in the journey view. No ID numbers visible. |
+| Research figure | `public/images/projects/ieee-figure.png` | none | Replaces the designed paper preview on the wall and in the research view. |
 | Education / experience / balcony photos | `public/images/education/`, `…/experience/`, `…/balcony/` | none | Every image appears as a gallery in that panel, automatically. |
 | Book covers | `public/images/books/` | `books.ts` | Set an item's `image` to the cover path. |
 
@@ -123,9 +126,21 @@ Save a square image as `public/images/music/example-track.jpg` and set `albumArt
 3. Reload and click the easel.
 
 ## 12. Add project screenshots
-Drop the images into `public/images/projects/` (for example `wc26-1.png`). They appear as a gallery at the top of "Things I've built", in name order. No content entry is needed. Education, experience and balcony photos work the same way in their own folders.
+1. Save them in `public/images/projects/` using the names already on the project's `Images:` line in `src/content/projects.ts` (for the World Cup predictor: `wc26-1.png`, `wc26-2.png`, `wc26-shap.png`).
+2. Reload, open the laptop, open the repository and choose **Visualisations**.
+
+To add a new screenshot, add its filename to that `Images:` line. When a project's links or role are ready, replace the `[PLACEHOLDER]` on its `GitHub:`, `Live demo:` or `My role in the team:` line with the real value; the workspace picks them up automatically.
+
+## 13. The laptop workspace and the framed displays
+- **Laptop:** everything comes from `src/content/projects.ts`. Keep the `Project N:` headings and the `Overview:`, `Problem:`, `Approach:`, `Implementation:`, `Results:`, `Findings:`, `Tech:`, `GitHub:`, `Live demo:` labels. A project's GitHub link is what shows the "Public" badge and the clone command. The "coming soon" slots come from the `Projects 4+` line.
+- **Education:** `src/content/education.ts`. The wall card uses the first degree's title, university, place and years, plus its status in brackets, e.g. `(in progress)`.
+- **My Journey:** `src/content/experience.ts`, newest role first. Each role starts with `Role, Company, Place, Mon YYYY – Mon YYYY` and is followed by its bullet lines and a `Tools:` line.
+- **Research:** `src/content/research.ts`. Replace `[PLACEHOLDER]` after `Paper title:`, `Plain-English summary`, and `My contribution:`. The wall preview then shows the real title.
 
 ---
+
+## The GitHub Pages copy
+`.github/workflows/pages.yml` publishes a static copy of the site at `https://nanda777-max.github.io/pixel-perfect-replay-75334/` every time `main` changes, about two minutes after a push. It only runs while the repository is public. On that copy, visitors can read approved guestbook notes but can't post new ones, because GitHub Pages can't run the server code that saves them. Everything else works the same.
 
 ## Placeholder checklist — text still to supply
 - `src/content/about.ts` → `text`: personal one-liner; résumé at `public/files/resume.pdf`.

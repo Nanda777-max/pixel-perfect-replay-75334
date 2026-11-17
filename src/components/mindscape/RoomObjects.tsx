@@ -7,10 +7,11 @@ import { Box3, CanvasTexture, Color, Group, Mesh, MeshStandardMaterial, PointLig
 import { SceneLabel } from './SceneLabel';
 import { posters, posterLayout } from '@/content/posters';
 import { music } from '@/content/music';
-import { existingImage, portraitImage } from '@/content/media';
+import { existingImage, portraitImage, withBase } from '@/content/media';
 import { useMusicPlayer } from '@/lib/music-player';
 import { drawWorldMap, loadCountries } from '@/lib/countries';
 import type { Section } from '@/content/room';
+import { drawLaptopScreen, fontsReady } from './frameArt';
 
 type Vec = [number, number, number];
 /** Warm 2700–3000 K lamp colour. */
@@ -60,7 +61,7 @@ function placeholderTexture(kind: 'portrait' | 'poster', tint: string, seed = 0)
 
 // ── Warm desk lamp ───────────────────────────────────────────────────────────
 export function WarmLamp({ url, position, height, on, onToggle, reduced }: { url: string; position: Vec; height: number; on: boolean; onToggle: () => void; reduced: boolean }) {
-  const { scene } = useGLTF(url);
+  const { scene } = useGLTF(withBase(url));
   const { model, shade } = useMemo(() => {
     const c = scene.clone(true); const b = new Box3().setFromObject(c); const size = b.getSize(new Vector3()); const centre = b.getCenter(new Vector3()); const k = height / size.y;
     c.position.set(-centre.x * k, -b.min.y * k, -centre.z * k); c.scale.setScalar(k);
@@ -173,4 +174,41 @@ export function GlobeTable({ position, onSelect, reduced }: { position: Vec; onS
       {hover && <SceneLabel position={[0, 0.8, 0]}><div className="tooltip-label">A world of memories</div></SceneLabel>}
     </group>
   </group>;
+}
+
+// ── Framed displays (education, journey, research) ──────────────────────────
+/** A canvas drawing as a texture, redrawn once the site fonts have loaded. */
+export function useDrawnTexture(draw: () => HTMLCanvasElement) {
+  const [texture, setTexture] = useState<CanvasTexture | null>(null);
+  useEffect(() => {
+    let live = true; let made: CanvasTexture | null = null;
+    fontsReady().then(() => { if (!live) return; made = new CanvasTexture(draw()); made.colorSpace = SRGBColorSpace; made.anisotropy = 8; setTexture(made); });
+    return () => { live = false; made?.dispose(); };
+  }, [draw]);
+  return texture;
+}
+
+export function FramedDisplay({ id, position, label, draw, photo, onSelect }: { id: Section; position: Vec; label: string; draw: () => HTMLCanvasElement; photo: string; onSelect: (id: Section) => void }) {
+  const art = useDrawnTexture(draw);
+  const image = useSafeTexture(existingImage(photo));
+  const W = 0.85, H = 0.57;
+  const map = useMemo(() => { if (image) coverCrop(image, W / H); return image ?? art; }, [image, art]);
+  const group = useRef<Group>(null);
+  const { hover, bind } = useHover();
+  useFrame((_, dt) => { if (group.current) { const s = group.current.scale.x + ((hover ? 1.04 : 1) - group.current.scale.x) * (1 - Math.exp(-10 * Math.min(dt, 0.05))); group.current.scale.setScalar(s); } });
+  return <group ref={group} position={position} onClick={e => { e.stopPropagation(); onSelect(id); }} {...bind}>
+    <mesh castShadow receiveShadow><boxGeometry args={[1, 0.72, 0.08]} /><meshStandardMaterial color={hover ? '#b98a5c' : '#9a6b45'} roughness={0.6} /></mesh>
+    <mesh position={[0, 0, 0.041]}><boxGeometry args={[0.9, 0.62, 0.01]} /><meshStandardMaterial color="#f4ecd8" roughness={0.9} /></mesh>
+    <mesh position={[0, 0, 0.047]}><planeGeometry args={[W, H]} /><meshStandardMaterial map={map} color={map ? '#ffffff' : '#f4ecd8'} roughness={0.8} emissive="#fff3d6" emissiveIntensity={hover ? 0.12 : 0} /></mesh>
+    {hover && <SceneLabel position={[0, 0.55, 0.1]}><div className="tooltip-label">{label}</div></SceneLabel>}
+  </group>;
+}
+
+/** The laptop screen overlay, in the laptop model's own units (see Room's Model). */
+export function LaptopScreen() {
+  const screen = useDrawnTexture(drawLaptopScreen);
+  // Inner screen corners in the Kenney laptop model: x 0.04–0.56, from (y .067, z −.384) to (y .331, z −.502).
+  return <mesh position={[0, 0.199, -0.443 + 0.2728]} rotation={[-0.424, 0, 0]} renderOrder={1}>
+    <planeGeometry args={[0.52, 0.289]} /><meshBasicMaterial map={screen} color={screen ? '#ffffff' : '#0d1117'} toneMapped={false} polygonOffset polygonOffsetFactor={-2} />
+  </mesh>;
 }

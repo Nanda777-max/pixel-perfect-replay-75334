@@ -4,10 +4,19 @@
 import { publicImages } from 'virtual:public-images';
 
 const known = new Set(publicImages);
+/** The site's base address: '/' normally, '/<repo>/' on GitHub Pages. */
+const BASE = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
+
+/** Prefix a site path with the base address, so files load on GitHub Pages too. */
+export function withBase(path: string) {
+  if (!path.startsWith('/') || (BASE && path.startsWith(BASE + '/'))) return path;
+  return BASE + path;
+}
 
 /** Normalise 'images/a.jpg', '/images/a.jpg' or 'public/images/a.jpg' to '/images/a.jpg'. */
 export function sitePath(path: string) {
-  return '/' + path.replace(/^\/+/, '').replace(/^public\//, '');
+  const p = BASE && path.startsWith(BASE + '/') ? path.slice(BASE.length) : path;
+  return '/' + p.replace(/^\/+/, '').replace(/^public\//, '');
 }
 
 /** The image path if that file exists in public/, otherwise null. External https:// links are trusted. */
@@ -15,19 +24,20 @@ export function existingImage(path?: string | null) {
   if (!path) return null;
   if (/^https?:\/\//.test(path)) return path;
   const p = sitePath(path);
-  return known.has(p) ? p : null;
+  return known.has(p) ? withBase(p) : null;
 }
 
 /** All images directly or indirectly inside a public folder, in natural order (photo-2 before photo-10). */
 export function imagesIn(folder: string) {
   const prefix = sitePath(folder).replace(/\/?$/, '/');
-  return publicImages.filter(p => p.startsWith(prefix));
+  return publicImages.filter(p => p.startsWith(prefix)).map(withBase);
 }
 
 /** First existing file for a base name in any supported format, e.g. portrait.jpg or portrait.webp. */
 export function firstImage(basePath: string) {
   const base = sitePath(basePath).replace(/\.[a-z0-9]+$/i, '');
-  return ['jpg', 'jpeg', 'png', 'webp', 'avif'].map(ext => `${base}.${ext}`).find(p => known.has(p)) ?? null;
+  const found = ['jpg', 'jpeg', 'png', 'webp', 'avif'].map(ext => `${base}.${ext}`).find(p => known.has(p));
+  return found ? withBase(found) : null;
 }
 
 export const profileImages = { portrait: '/images/profile/portrait.jpg', characterReference: '/images/profile/character-ref.jpg' };

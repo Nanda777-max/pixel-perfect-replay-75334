@@ -12,8 +12,8 @@ export function publicImages(): Plugin {
   const id = "virtual:public-images";
   const resolved = "\0" + id;
   const image = /\.(jpe?g|png|webp|avif|gif)$/i;
-  let root = process.cwd();
-  const folders = () => ["images", "artwork"].map((f) => path.join(root, "public", f));
+  let publicDir = path.join(process.cwd(), "public");
+  const folders = () => ["images", "artwork"].map((f) => path.join(publicDir, f));
   const walk = (dir: string): string[] =>
     fs.existsSync(dir)
       ? fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -24,14 +24,13 @@ export function publicImages(): Plugin {
   return {
     name: "mindscape-public-images",
     configResolved(config) {
-      root = config.root;
+      if (config.publicDir) publicDir = config.publicDir;
     },
     resolveId(source) {
       return source === id ? resolved : undefined;
     },
     load(source) {
       if (source !== resolved) return;
-      const publicDir = path.join(root, "public");
       const files = folders()
         .flatMap(walk)
         .map((file) => "/" + path.relative(publicDir, file).split(path.sep).join("/"))

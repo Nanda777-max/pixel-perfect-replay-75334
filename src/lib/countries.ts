@@ -1,6 +1,7 @@
 // Country borders (Natural Earth 1:110m, public domain), slimmed to { name, code } per country.
 // Loaded on demand from public/data/countries.geojson so the first page load stays light.
 import { visitedCountries } from '@/content/travel';
+import { withBase } from '@/content/media';
 
 export interface CountryFeature {
   type: 'Feature';
@@ -10,7 +11,7 @@ export interface CountryFeature {
 
 let cache: Promise<CountryFeature[]> | null = null;
 export function loadCountries() {
-  cache ??= fetch('/data/countries.geojson')
+  cache ??= fetch(withBase('/data/countries.geojson'))
     .then(r => { if (!r.ok) throw new Error(`Country data failed to load (${r.status})`); return r.json(); })
     .then((d: { features: CountryFeature[] }) => d.features)
     .catch(e => { cache = null; throw e; });

@@ -2,6 +2,7 @@
 // Only local audio files (MusicTrack.audioFile) play here; Spotify plays inside its own embed.
 import { useSyncExternalStore } from 'react';
 import { music, type MusicTrack } from '@/content/music';
+import { withBase } from '@/content/media';
 
 interface State { index: number; playing: boolean; time: number; duration: number; volume: number; muted: boolean; error: string }
 let state: State = { index: 0, playing: false, time: 0, duration: 0, volume: 0.8, muted: false, error: '' };
@@ -36,7 +37,8 @@ export const musicPlayer = {
     const a = element(); const t = track();
     if (!a || !t?.audioFile) return;
     if (!a.paused) { a.pause(); return; }
-    if (!a.src.endsWith(t.audioFile)) a.src = t.audioFile;
+    const src = withBase(t.audioFile);
+    if (!a.src.endsWith(src)) a.src = src;
     a.volume = state.volume; a.muted = state.muted;
     try { await a.play(); } catch { set({ playing: false, error: 'Playback was blocked or the file is missing.' }); }
   },

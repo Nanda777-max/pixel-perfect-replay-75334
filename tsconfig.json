@@ -4,6 +4,9 @@
     "src/**/*.tsx",
     "vite.config.ts",
     "plugins/**/*.ts",
+    "pages/**/*.ts",
+    "pages/**/*.tsx",
+    "vite.pages.config.ts",
     "vitest.config.ts",
     "eslint.config.js"
   ],

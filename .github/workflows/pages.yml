@@ -1,0 +1,51 @@
+# Publishes a static copy of the site to GitHub Pages on every push to main.
+# Runs only while the repository is public (GitHub Pages on free accounts needs a public repo).
+# One-time setup: Settings → Pages → Build and deployment → Source: GitHub Actions.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - uses: actions/configure-pages@v5
+      - name: Build the static site
+        run: node node_modules/vite/bin/vite.js build -c vite.pages.config.ts
+        env:
+          PAGES_BASE: /${{ github.event.repository.name }}/
+      - name: Serve the site for any address
+        run: cp dist-pages/index.html dist-pages/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
