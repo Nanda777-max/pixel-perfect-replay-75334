@@ -1,86 +1,15 @@
-export const travel = [
-  {
-    "status": "placeholder",
-    "place": "Kollam",
-    "country": "India",
-    "lat": 8.8932,
-    "lng": 76.6141,
-    "confirmed": false,
-    "photo": null,
-    "memory": "",
-    "funFact": "",
-    "visited": ""
-  },
-  {
-    "status": "placeholder",
-    "place": "Kochi",
-    "country": "India",
-    "lat": 9.9312,
-    "lng": 76.2673,
-    "confirmed": false,
-    "photo": null,
-    "memory": "",
-    "funFact": "",
-    "visited": ""
-  },
-  {
-    "status": "placeholder",
-    "place": "Kolkata",
-    "country": "India",
-    "lat": 22.5726,
-    "lng": 88.3639,
-    "confirmed": false,
-    "photo": null,
-    "memory": "",
-    "funFact": "",
-    "visited": ""
-  },
-  {
-    "status": "placeholder",
-    "place": "Melbourne",
-    "country": "Australia",
-    "lat": -37.8136,
-    "lng": 144.9631,
-    "confirmed": false,
-    "photo": null,
-    "memory": "",
-    "funFact": "",
-    "visited": ""
-  },
-  {
-    "status": "placeholder",
-    "place": "",
-    "country": "",
-    "lat": 0,
-    "lng": 0,
-    "confirmed": false,
-    "photo": null,
-    "memory": "",
-    "funFact": "",
-    "visited": ""
-  },
-  {
-    "status": "placeholder",
-    "place": "",
-    "country": "",
-    "lat": 0,
-    "lng": 0,
-    "confirmed": false,
-    "photo": null,
-    "memory": "",
-    "funFact": "",
-    "visited": ""
-  },
-  {
-    "status": "placeholder",
-    "place": "",
-    "country": "",
-    "lat": 0,
-    "lng": 0,
-    "confirmed": false,
-    "photo": null,
-    "memory": "",
-    "funFact": "",
-    "visited": ""
-  }
+export interface VisitedCountry {
+  id: string;
+  country: string;
+  countryCode: string; // ISO 3166-1 alpha-2, e.g. TH, IN, AU
+  visited: boolean; // Set true only after confirming an actual visit.
+  photos: string[]; // Filenames within /images/travel/<id>/ or absolute public paths.
+  description?: string;
+}
+// An example configuration, NOT a claim of travel.
+export const visitedCountries: VisitedCountry[] = [
+  { id: 'thailand', country: 'Thailand', countryCode: 'TH', visited: false, photos: [], description: '' },
 ];
+export function visitedCountry(code: string, countries = visitedCountries) {
+  return countries.find(country => country.visited && country.countryCode.toUpperCase() === code.toUpperCase());
+}

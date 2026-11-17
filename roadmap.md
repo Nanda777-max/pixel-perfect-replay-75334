@@ -1,4 +1,8 @@
 # My Mindscape
+- [ ] Second stage: animated tropical outdoors, responsive curtains and warm fading lamp.
+- [ ] Second stage: country-level globe, visited highlighting and photo albums.
+- [ ] Second stage: portrait, framed posters, music carousel and working local playback.
+- [ ] Second stage: content asset conventions, guide and interaction verification.
 - [x] Build and verify the initial explorable monsoon room.
 - [x] Connect supplied professional content and intentional personal placeholders.
 - [x] Add quick navigation, object views and mobile layout.
