@@ -199,10 +199,13 @@ function Notes() {
   </group>;
 }
 function Headphones() {
+  /** Lying flat, the ear cups reach this far below the group origin: lift so they sit on the desk.
+   *  Rotation order YXZ turns them about the room's vertical axis, so they stay level on the desk. */
+  const REST_Y = DESK_Y + 0.035 * S;
   const g = useRef<Group>(null); const [held, setHeld] = useState(false); const { hover, bind } = useHoverCursor();
-  useFrame((_, dt) => { if (!g.current) return; const a = ease(dt, 6); g.current.position.y += ((held ? DESK_Y + 0.28 : DESK_Y) - g.current.position.y) * a; g.current.rotation.x += ((held ? 0 : -Math.PI / 2) - g.current.rotation.x) * a; g.current.rotation.y += ((held ? 0.6 : 0.4) - g.current.rotation.y) * a; });
-  return <group ref={g} position={[-0.62, DESK_Y, -2.85]} rotation={[-Math.PI / 2, 0.4, 0]} scale={S} onClick={e => { e.stopPropagation(); setHeld(!held); }} {...bind}>
-    <mesh position={[0, 0.03, 0]} castShadow><torusGeometry args={[0.085, 0.011, 8, 32, Math.PI]} /><meshStandardMaterial color="#2c2a22" roughness={0.5} /></mesh>
+  useFrame((_, dt) => { if (!g.current) return; const a = ease(dt, 6); g.current.position.y += ((held ? REST_Y + 0.28 : REST_Y) - g.current.position.y) * a; g.current.rotation.x += ((held ? 0 : -Math.PI / 2) - g.current.rotation.x) * a; g.current.rotation.y += ((held ? 0.6 : 0.4) - g.current.rotation.y) * a; });
+  return <group ref={g} position={[-0.62, REST_Y, -2.85]} rotation={[-Math.PI / 2, 0.4, 0, 'YXZ']} scale={S} onClick={e => { e.stopPropagation(); setHeld(!held); }} {...bind}>
+    <mesh position={[0, 0.03, -0.024]} castShadow><torusGeometry args={[0.085, 0.011, 8, 32, Math.PI]} /><meshStandardMaterial color="#2c2a22" roughness={0.5} /></mesh>
     {[-0.085, 0.085].map(x => <mesh key={x} position={[x, 0.025, 0]} rotation={[0, 0, Math.PI / 2]} castShadow><cylinderGeometry args={[0.035, 0.035, 0.028, 20]} /><meshStandardMaterial color="#3f5a46" roughness={0.6} /></mesh>)}
     {hover && <SceneLabel position={[0, 0.3, 0]}><div className="tooltip-label">{held ? 'Put them back' : 'Pick up the headphones'}</div></SceneLabel>}
   </group>;
