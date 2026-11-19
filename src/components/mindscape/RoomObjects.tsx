@@ -209,8 +209,9 @@ export function LaptopScreen() {
   const screen = useSafeTexture(withBase('/images/laptop-lock.jpg'));
   // Kenney laptop: the file scales its mesh by 0.44. Inner screen corners in raw mesh units run
   // x 0.04–0.56, from (y .067, z −.384) up to (y .331, z −.502); the lid faces (0, .41, .91).
+  // The overlay sits 0.006 in front of the lid so the lid can't hide it from steep angles.
   return <group scale={0.44}>
-    <mesh position={[0.3, 0.199, -0.443]} rotation={[-0.424, 0, 0]} renderOrder={1}>
+    <mesh position={[0.3, 0.199 + 0.41 * 0.006, -0.443 + 0.91 * 0.006]} rotation={[-0.424, 0, 0]} renderOrder={1}>
       <planeGeometry args={[0.52, 0.289]} /><meshBasicMaterial map={screen} color={screen ? '#ffffff' : '#1d2f2a'} toneMapped={false} polygonOffset polygonOffsetFactor={-2} />
     </mesh>
   </group>;

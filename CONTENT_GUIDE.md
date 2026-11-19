@@ -24,7 +24,9 @@ You never need to edit anything in `src/components/`.
 | Travel photos | `public/images/travel/<country-id>/` | `travel.ts` | Every image in the country's folder appears in its album, automatically. The country must be marked `visited: true`. |
 | Visited countries | none | `travel.ts` | `visited: true` highlights the whole country on both globes. |
 | Music | `public/images/music/` (covers), `public/audio/` (audio) | `music.ts` | Each entry becomes an album card. Needs an entry. |
-| Artwork | `public/artwork/` | `artwork.ts` | Shows the image in the easel panel. Needs the `image` field. |
+| Artwork | `public/artwork/` | `artwork.ts` | Each entry is one artwork in the museum gallery, with its gold plaque. The first artwork with an image also appears on the easel's canvas. |
+| Drawer memories | `public/images/drawers/` | `drawers.ts` | Objects appear in the drawer you link them to, in the room and in the tray that opens. Empty drawers show a placeholder. |
+| Desk notes | none | `desk.ts` | Clicking a note on the desk shows its text. |
 | Project screenshots | `public/images/projects/` | `projects.ts` (`Images:` line) | Files named on a project's `Images:` line appear in its **Visualisations** tab in the laptop workspace. Any image in the folder also shows as a gallery. |
 | Education frame photo | `public/images/education/monash.jpg` | none | Replaces the designed certificate-style card on the wall and in the education view. |
 | Journey frame photo | `public/images/experience/tcs.jpg` | none | Replaces the designed timeline on the wall and in the journey view. No ID numbers visible. |
@@ -122,10 +124,28 @@ Save a square image as `public/images/music/example-track.jpg` and set `albumArt
 - **Any other page** (YouTube, Apple Music, Bandcamp): set `externalUrl`. A "Listen externally" link opens it in a new tab.
 - **Your own audio:** put the file in `public/audio/` and set `audioFile`. This plays in the site's own player: play, pause, next and previous, progress, volume and mute. The record spins and the tonearm swings onto it while it plays. Music never starts by itself.
 
-## 11. Add artwork
-1. Save the image as `public/artwork/artwork-1.jpg`.
-2. In `src/content/artwork.ts`, fill an item: `"title": "Monsoon study"`, `"image": "/artwork/artwork-1.jpg"`, plus `medium`, `year` and `description`.
-3. Reload and click the easel.
+## 11. Add artwork (the museum gallery)
+1. Save the image in `public/artwork/`, for example `public/artwork/monsoon-memories.jpg`. Any shape works; it is never cropped or stretched.
+2. In `src/content/artwork.ts`, fill in a placeholder entry (or copy one to add more):
+
+```ts
+{
+  "id": "monsoon-memories",
+  "status": "ready",
+  "title": "Monsoon Memories",
+  "artist": "Nanda Kishor Sajeev",
+  "medium": "Digital illustration",
+  "year": "2026",
+  "description": "Optional: one or two lines shown under the plaque.",
+  "image": "/artwork/monsoon-memories.jpg"
+},
+```
+
+3. Reload and click the easel. The camera moves to the easel, the room dims under a warm spotlight, and the gallery opens.
+- **The gold plaque** shows the title in italics, the artist in capitals, then "medium · year". Any empty field is simply left off.
+- **An entry with an empty `title`** stays a "Work in progress" canvas in the carousel.
+- **The order of entries** is the order of the carousel.
+- **The easel in the room** shows the first artwork that has an image.
 
 ## 12. Add project screenshots
 1. Save them in `public/images/projects/` using the names already on the project's `Images:` line in `src/content/projects.ts` (for the World Cup predictor: `wc26-1.png`, `wc26-2.png`, `wc26-shap.png`).
@@ -175,6 +195,39 @@ Each entry in `src/content/books.ts` is one book on the shelf, in order. Replace
 ## 17. Add a book cover
 Save the cover (portrait shape, about 600×900, JPG or WebP) in `public/images/books/`, for example `thinking-fast-and-slow.jpg`, and set that book's `"cover"` to `"/images/books/thinking-fast-and-slow.jpg"`. Without a cover, the book gets a designed cloth cover with its title and author.
 
+## 18. Add memories to the drawers
+There are three drawers: the **desk drawer** (`desk`) and the **top** and **bottom drawers** of the little cabinet by the window (`cabinet-top`, `cabinet-bottom`). Click one in the room to slide it open; a tray shows what's inside.
+
+1. Put a photo of the object in `public/images/drawers/`, for example `first-ticket.jpg`.
+2. Add an entry to `drawerObjects` in `src/content/drawers.ts`:
+
+```ts
+export const drawerObjects: DrawerObject[] = [
+  {
+    id: 'first-ticket',
+    drawer: 'cabinet-top',               // which drawer it lives in
+    title: 'Ticket from my first trip',
+    image: '/images/drawers/first-ticket.jpg',
+    description: 'One short line.',
+    story: 'The longer story, shown when someone taps "Read the story".',
+    category: 'Travel',
+  },
+];
+```
+
+- `image`, `description`, `story` and `category` are optional.
+- A drawer with nothing in it says "Some memories are still waiting to be placed here." and still opens and closes.
+- To rename a drawer, change its `label` or `where` in the `drawers` list. The ids must stay the same.
+
+## 19. Write on the desk notes
+The three loose notes on the desk come from `src/content/desk.ts`. Put text in `text` and clicking that note shows it; an empty note says "Nothing written here yet."
+
+## 20. The ball and motion controls
+- **Mouse or finger:** press on the ball, drag it, and let go. The faster you move, the harder it's thrown. It bounces off the walls and furniture, loses energy, and rolls to a stop.
+- **Phones (tilt and shake):** an "Enable motion controls" button appears on touch devices. Nothing is asked until it's pressed; iPhones then show a permission prompt. Tilting the phone rolls the ball "downhill" and a firm shake gives it a push. "Re-centre" makes the current way you're holding the phone count as level. Pressing the button again turns motion off.
+- **Desktop:** drag and throw only, since computers don't have motion sensors. Rotating the camera never changes gravity.
+- **Adjusting the feel:** the physics settings (bounciness, friction) and the furniture outlines it collides with are in `src/lib/ball-physics.ts`.
+
 ## The GitHub Pages copy
 `.github/workflows/pages.yml` publishes a static copy of the site at `https://nanda777-max.github.io/pixel-perfect-replay-75334/` every time `main` changes, about two minutes after a push. It only runs while the repository is public. On that copy, visitors can read approved guestbook notes but can't post new ones, because GitHub Pages can't run the server code that saves them. Everything else works the same.
 
@@ -197,4 +250,4 @@ Database configuration is managed by Lovable Cloud; do not paste privileged cred
 Private sending is disabled. Configure `CONTACT_TO_EMAIL` through Secrets, and configure a verified sending service before implementing delivery. No destination address belongs in public content or repository code. No submission is claimed to have been sent. Optional `CONTACT_FROM_EMAIL` must be a verified sender. Email delivery implementation and its end-to-end test remain open.
 
 ## Still not built
-Character model and reactions, football physics, secure private email and an owner moderation screen.
+Character model and reactions, secure private email and an owner moderation screen.
