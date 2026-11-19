@@ -1,13 +1,15 @@
-// The easel, opened: a small museum exhibition. Each artwork hangs large under a spotlight with a
-// brass identification plaque; a carousel walks between them. All data from src/content/artwork.ts.
+// The easel, opened: a private after-hours museum. One painting hangs large on a dark wall under
+// warm spotlights, with a brass identification plaque mounted beneath it; a carousel walks between
+// exhibits. All metadata comes from src/content/artwork.ts — nothing here is invented.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { artwork, type Artwork } from '@/content/artwork';
 import { existingImage } from '@/content/media';
 
 const filled = (v?: string | null) => Boolean(v && v.trim() && !v.includes('[PLACEHOLDER]'));
 const isReal = (a: Artwork) => filled(a.title);
 
+/** The brass label mounted on the wall under the painting: title, artist, medium, year. */
 function Plaque({ art }: { art: Artwork }) {
   const details = [art.medium, art.year].filter(filled).join(' · ');
   return <div className="gal-plaque" aria-label="Artwork label">
@@ -23,6 +25,7 @@ function Plaque({ art }: { art: Artwork }) {
   </div>;
 }
 
+/** One exhibit: the painting on the wall, its plaque beneath it. */
 function Piece({ art, index }: { art: Artwork; index: number }) {
   const src = existingImage(art.image);
   const [ratio, setRatio] = useState<number | null>(null);
@@ -44,7 +47,7 @@ export default function Gallery({ onClose }: { onClose: () => void }) {
   const start = useRef<number | null>(null);
   const count = artwork.length;
   const go = useCallback((d: number) => setIndex(i => Math.max(0, Math.min(count - 1, i + d))), [count]);
-  const close = useCallback(() => { setClosing(true); setTimeout(onClose, 380); }, [onClose]);
+  const close = useCallback(() => { setClosing(true); setTimeout(onClose, 480); }, [onClose]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); };
     document.addEventListener('keydown', key); return () => document.removeEventListener('keydown', key);
@@ -55,16 +58,28 @@ export default function Gallery({ onClose }: { onClose: () => void }) {
 
   return <div className={`gal-shade ${closing ? 'is-closing' : ''}`} onClick={close}>
     <section className="gal-room" role="dialog" aria-modal="true" aria-label="Art gallery" onClick={e => e.stopPropagation()}>
-      <span className="gal-spot" aria-hidden />
-      <header className="gal-header">
-        <div><span className="eyebrow">The easel</span><h2>A small <em>exhibition</em></h2></div>
-        <button className="gal-close" onClick={close} aria-label="Close the gallery and return to the room"><X size={18} /><span>Back to the room</span></button>
-      </header>
+      {/* The room itself: dark walls, angled wings, a wooden floor and the lights that fall on them. */}
+      <div className="gal-museum" aria-hidden>
+        <div className="gal-wall" />
+        <div className="gal-wing gal-wing-l" />
+        <div className="gal-wing gal-wing-r" />
+        <div className="gal-floor" />
+        <div className="gal-cone gal-cone-l" />
+        <div className="gal-cone gal-cone-r" />
+        <div className="gal-pool" />
+        <div className="gal-vignette" />
+      </div>
+
+      <button className="gal-close" onClick={close} aria-label="Back to the room">
+        <ArrowLeft size={15} /><span>Back to the room</span>
+      </button>
+
       <div className="gal-viewport" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} aria-roledescription="carousel">
         <div className="gal-track" style={{ transform: `translateX(calc(${-index * 100}% + ${drag}px))`, transition: drag ? 'none' : undefined }}>
           {artwork.map((art, i) => <div className="gal-slide" key={art.id} aria-hidden={i !== index} aria-roledescription="slide" aria-label={`${i + 1} of ${count}`}><Piece art={art} index={i} /></div>)}
         </div>
       </div>
+
       <footer className="gal-footer">
         <button className="gal-arrow" onClick={() => go(-1)} disabled={index === 0} aria-label="Previous artwork"><ChevronLeft /></button>
         <div className="gal-progress"><span>{String(index + 1).padStart(2, '0')}</span><span className="gal-dots">{artwork.map((a, i) => <button key={a.id} aria-label={`Show artwork ${i + 1}`} aria-current={i === index} onClick={() => setIndex(i)} />)}</span><span>{String(count).padStart(2, '0')}</span></div>

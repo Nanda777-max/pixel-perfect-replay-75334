@@ -1,6 +1,6 @@
 // A small, dependency-free physics step for one ball in the room: gravity (which can be tilted),
 // bouncing with energy loss, wall and furniture collisions, rolling friction and rolling spin.
-import { Quaternion, Vector3 } from 'three';
+import { Euler, Quaternion, Vector3 } from 'three';
 
 export const BALL_RADIUS = 0.17;
 export const GRAVITY = 9.81;
@@ -28,6 +28,20 @@ export const ROOM = { minX: -4.22, maxX: 4.2, minZ: -3.42, maxZ: 3.4, top: 3.7 }
 const RUG = { minX: -1.75, maxX: 1.75, minZ: -0.52, maxZ: 1.92, h: 0.058 };
 export const floorAt = (x: number, z: number) => (x > RUG.minX && x < RUG.maxX && z > RUG.minZ && z < RUG.maxZ ? RUG.h : 0);
 export const SPAWN = new Vector3(0.35, RUG.h + BALL_RADIUS, 0.95);
+
+const eul = new Euler(), rot = new Quaternion(), inv = new Quaternion();
+
+/**
+ * Gravity felt inside a room tipped by tiltX/tiltZ radians: world "down" seen from the room's own
+ * frame, so the ball rolls toward whichever side of the floor has come down. Pure rotation, so the
+ * strength stays exactly `gravity`.
+ */
+export function roomGravity(gravity: number, tiltX: number, tiltZ: number, out = new Vector3()) {
+  eul.set(tiltX, 0, tiltZ);
+  rot.setFromEuler(eul);
+  inv.copy(rot).invert();
+  return out.set(0, -gravity, 0).applyQuaternion(inv);
+}
 
 export interface BallState { p: Vector3; v: Vector3; q: Quaternion }
 const c = new Vector3(), d = new Vector3(), axis = new Vector3(), dq = new Quaternion();
