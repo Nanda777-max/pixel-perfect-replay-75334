@@ -221,16 +221,32 @@
 @keyframes gal-in{from{opacity:0}to{opacity:1}}
 .gal-room{position:relative;width:100%;height:100%;overflow:hidden;display:flex;flex-direction:column;background:#0d0b0a}
 .gal-museum{position:absolute;inset:0;pointer-events:none}
-.gal-wall{position:absolute;inset:0 0 19% 0;background:radial-gradient(72% 56% at 50% 36%,#3b3229 0%,#2a231c 34%,#17130f 68%,#0e0c0a 100%)}
-.gal-wall::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,oklch(1 0 0 / .015) 0 3px,transparent 3px 8px)}
-.gal-wing{position:absolute;top:0;bottom:17%;width:30%}
-.gal-wing-l{left:0;transform-origin:0 50%;transform:perspective(1100px) rotateY(38deg);background:linear-gradient(90deg,#070605 0%,#171310 62%,#241d17 100%)}
-.gal-wing-r{right:0;transform-origin:100% 50%;transform:perspective(1100px) rotateY(-38deg);background:linear-gradient(270deg,#070605 0%,#171310 62%,#241d17 100%)}
+/* Walls: warm dark plaster. Two noise layers give a fine grain and a soft, uneven mottling. */
+.gal-wall{position:absolute;inset:0 0 19% 0;background:radial-gradient(54% 50% at 50% 40%,#3a3027 0%,#2a231c 40%,#18140f 72%,#0f0c0a 100%)}
+.gal-wall::before,.gal-wing::before{content:"";position:absolute;inset:0;opacity:.85;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .95  0 0 0 0 .88  0 0 0 0 .76  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='.006' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .9  0 0 0 0 .82  0 0 0 0 .7  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23m)'/></svg>")}
+.gal-wall::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,oklch(0 0 0 / .55) 0%,transparent 9%,transparent 91%,oklch(0 0 0 / .55) 100%)}
+.gal-wing{position:absolute;top:0;bottom:17%;width:30%;overflow:hidden}
+.gal-wing-l{left:0;transform-origin:0 50%;transform:perspective(1100px) rotateY(38deg);background:linear-gradient(90deg,#080706 0%,#15110e 58%,#211a15 96%,#0b0907 100%)}
+.gal-wing-r{right:0;transform-origin:100% 50%;transform:perspective(1100px) rotateY(-38deg);background:linear-gradient(270deg,#080706 0%,#15110e 58%,#211a15 96%,#0b0907 100%)}
+/* Discreet wall washers: a soft fan of light grazing each side wall from a small sconce. */
+.gal-wash{position:absolute;top:22%;width:70%;height:58%;background:radial-gradient(50% 42% at 50% 0%,oklch(.8 .09 74 / .2),oklch(.7 .07 70 / .06) 55%,transparent 80%);filter:blur(6px)}
+.gal-wing-l .gal-wash{right:12%}.gal-wing-r .gal-wash{left:12%}
+.gal-wash::before{content:"";position:absolute;top:-6px;left:50%;width:22px;height:7px;margin-left:-11px;border-radius:2px 2px 6px 6px;background:linear-gradient(#2c241c,#120e0b);box-shadow:0 3px 8px oklch(.85 .1 78 / .35)}
+/* Architectural depth: a shadowed cornice at the ceiling line and a skirting where wall meets floor. */
+.gal-cornice{position:absolute;left:0;right:0;top:0;height:34px;background:linear-gradient(180deg,#060504 0%,#14100d 55%,#1d1713 78%,oklch(0 0 0 / 0) 100%);box-shadow:0 10px 18px oklch(0 0 0 / .45)}
+.gal-cornice::after{content:"";position:absolute;left:0;right:0;bottom:7px;height:1px;background:oklch(.75 .05 75 / .1)}
+.gal-skirting{position:absolute;left:0;right:0;bottom:19%;height:16px;transform:translateY(100%);background:linear-gradient(180deg,oklch(.75 .05 75 / .14) 0,#201912 1px,#15100c 45%,#0b0807 100%);box-shadow:0 1px 0 oklch(.7 .06 75 / .07),0 8px 16px oklch(0 0 0 / .65)}
+.gal-skirting::after{content:"";position:absolute;left:0;right:0;top:100%;height:26px;background:linear-gradient(180deg,oklch(0 0 0 / .55),transparent)}
+.gal-floor::after{content:"";position:absolute;inset:0;background:radial-gradient(28% 22% at 50% 0%,oklch(.75 .09 76 / .16),transparent 80%)}
 .gal-floor{position:absolute;left:-45%;right:-45%;bottom:0;height:56%;transform-origin:50% 100%;transform:perspective(900px) rotateX(72deg);background:linear-gradient(180deg,oklch(0 0 0 / .8) 0%,transparent 30%),repeating-linear-gradient(90deg,#241a13 0 92px,#1a1310 92px 184px),linear-gradient(180deg,#2b1f17 0%,#150f0c 66%,#0c0908 100%)}
-.gal-cone{position:absolute;top:0;height:80%;width:42%;background:linear-gradient(180deg,oklch(.84 .11 78 / .3) 0%,oklch(.8 .1 76 / .1) 46%,transparent 84%);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);filter:blur(11px);mix-blend-mode:screen}
-.gal-cone-l{left:8%;transform:rotate(6deg)}
-.gal-cone-r{right:8%;transform:rotate(-6deg)}
-.gal-pool{position:absolute;left:50%;bottom:5%;width:72%;height:26%;transform:translateX(-50%);background:radial-gradient(50% 62% at 50% 50%,oklch(.82 .12 78 / .22),transparent 72%);filter:blur(20px);mix-blend-mode:screen}
+/* Two small ceiling spots, each throwing a narrow, soft beam that converges on the painting. */
+.gal-fixture{position:absolute;top:22px;width:26px;height:16px;border-radius:3px 3px 9px 9px;background:linear-gradient(#1f1915,#0c0a08);box-shadow:0 1px 0 oklch(1 0 0 / .06) inset;z-index:1}
+.gal-fixture::after{content:"";position:absolute;left:5px;right:5px;bottom:-2px;height:4px;border-radius:50%;background:oklch(.93 .09 85);box-shadow:0 0 10px 3px oklch(.85 .12 80 / .55)}
+.gal-fixture-l{left:calc(50% - 21vw)}.gal-fixture-r{right:calc(50% - 21vw)}
+.gal-beam{position:absolute;top:30px;width:min(12vw,160px);height:min(40vh,400px);background:linear-gradient(180deg,oklch(.9 .1 82 / .11) 0%,oklch(.84 .1 78 / .05) 55%,transparent 100%);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%);filter:blur(22px);mix-blend-mode:screen;-webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%);mask-image:linear-gradient(180deg,#000 55%,transparent 100%)}
+.gal-beam-l{left:calc(50% - 21vw - min(6vw,80px) + 13px);transform-origin:50% 0;transform:rotate(-30deg)}
+.gal-beam-r{right:calc(50% - 21vw - min(6vw,80px) + 13px);transform-origin:50% 0;transform:rotate(30deg)}
+.gal-pool{position:absolute;left:50%;bottom:7%;width:min(40vw,520px);height:16%;transform:translateX(-50%);background:radial-gradient(50% 50% at 50% 50%,oklch(.82 .11 78 / .14),transparent 72%);filter:blur(22px);mix-blend-mode:screen}
 .gal-vignette{position:absolute;inset:0;background:radial-gradient(122% 92% at 50% 42%,transparent 44%,oklch(.02 0 0 / .94) 100%)}
 .gal-close{position:absolute;top:20px;left:24px;z-index:4;display:inline-flex;align-items:center;gap:9px;min-height:42px;padding:0 16px;border-radius:999px;border:1px solid oklch(1 0 0 / .16);background:oklch(1 0 0 / .05);color:#e6dac2;font:inherit;font-size:12.5px;letter-spacing:.4px;cursor:pointer;transition:background .25s,border-color .25s}
 .gal-close:hover{background:oklch(1 0 0 / .12);border-color:oklch(1 0 0 / .32)}
@@ -239,32 +255,57 @@
 .gal-slide{flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center;padding:0 6vw;opacity:.22;transition:opacity .6s ease}
 .gal-slide[aria-hidden=false]{opacity:1}
 .gal-piece{margin:0;display:flex;flex-direction:column;align-items:center;max-height:100%}
-.gal-frame{position:relative;height:min(58vh,600px);max-width:min(54vw,720px);aspect-ratio:4/5;padding:13px;background:linear-gradient(135deg,#2b2013 0%,#8a6a2e 20%,#e6c880 44%,#9a7634 62%,#3a2a15 88%,#171009 100%);box-shadow:0 46px 80px -22px oklch(0 0 0 / .85),0 0 0 1px #0e0a06}
-.gal-frame::before{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 6px #120d08,inset 0 3px 12px oklch(0 0 0 / .75);pointer-events:none}
-.gal-frame::after{content:"";position:absolute;left:8%;right:8%;bottom:-36px;height:36px;background:radial-gradient(50% 100% at 50% 0,oklch(0 0 0 / .62),transparent 72%);filter:blur(4px)}
-.gal-frame img{display:block;width:100%;height:100%;object-fit:contain;background:#171310}
-.gal-blank{width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(120% 120% at 50% 28%,#f2ead9 0%,#ded3ba 55%,#c3b699 100%);box-shadow:inset 0 0 70px oklch(.3 .03 60 / .55)}
-.gal-blank span{font-family:var(--font-display);font-style:italic;font-size:20px;color:#7d6f52}
-.gal-plaque{position:relative;margin-top:26px;min-width:250px;max-width:min(430px,80vw);padding:11px 34px 10px;text-align:center;display:flex;flex-direction:column;gap:2px;background:linear-gradient(180deg,#f3dd9a 0%,#dcb963 36%,#c09540 64%,#e6c878 100%);border:1px solid #8d6d2c;border-radius:2px;box-shadow:inset 0 1px 0 #fdf0bd,inset 0 -1px 0 #9a7935,0 10px 22px oklch(0 0 0 / .55);color:#33280f}
-.gal-screw{position:absolute;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff7d6,#a98a45 60%,#6e5422);box-shadow:0 1px 1px oklch(0 0 0 / .35)}.gal-screw:first-child{left:11px}.gal-screw:nth-child(2){right:11px}
-.gal-plaque-title{font-family:var(--font-display);font-style:italic;font-size:19px;line-height:1.25}
-.gal-plaque-artist{font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:1.6px;text-transform:uppercase;font-variant:small-caps}
-.gal-plaque-details{font-size:11px;letter-spacing:.4px;color:#4c3c1a}
+.gal-hang{position:relative}
+/* The pool of light the spots leave on the wall around the painting. */
+.gal-halo{position:absolute;inset:-22% -34%;pointer-events:none;background:radial-gradient(50% 50% at 50% 44%,oklch(.86 .1 80 / .26) 0%,oklch(.8 .09 76 / .1) 48%,transparent 76%);filter:blur(14px);mix-blend-mode:screen}
+/* Frame: a carved, gilded museum frame (src/assets/gallery-frame.svg) drawn with border-image, around
+   a thin dark linen slip. content-box sizing makes a painting's aspect ratio (--r) apply to the picture
+   itself, so the frame always fits the artwork exactly and nothing is stretched or cropped. */
+.gal-frame{--fw:34px;--slip:7px;position:relative;box-sizing:content-box;padding:var(--slip);border:var(--fw) solid #6b4f1f;border-image:url('./assets/gallery-frame.svg') 42 round;background:repeating-linear-gradient(0deg,oklch(1 0 0 / .025) 0 1px,transparent 1px 3px) padding-box,linear-gradient(#1b1510,#1b1510) padding-box,linear-gradient(#5c431a,#5c431a) border-box;box-shadow:0 34px 60px -18px oklch(0 0 0 / .88),0 10px 18px -6px oklch(0 0 0 / .6),0 0 80px oklch(.82 .1 80 / .07)}
+.gal-frame::after{content:"";position:absolute;left:4%;right:4%;bottom:calc(-1 * var(--fw) - 30px);height:30px;background:radial-gradient(50% 100% at 50% 0,oklch(0 0 0 / .62),transparent 72%);filter:blur(5px);pointer-events:none}
+.gal-canvas{position:relative;width:100%;height:100%;overflow:hidden;box-shadow:0 0 0 1px #0c0805}
+/* Light on the picture: brightest where the two spots cross near the top, falling off to the edges,
+   with the frame's own shadow along the top inside edge. */
+.gal-light{position:absolute;inset:0;pointer-events:none;background:radial-gradient(85% 70% at 50% 30%,oklch(.97 .05 85 / .14),transparent 62%),radial-gradient(130% 110% at 50% 40%,transparent 55%,oklch(0 0 0 / .34) 100%);box-shadow:inset 0 9px 14px -6px oklch(0 0 0 / .7),inset 0 0 0 1px oklch(0 0 0 / .4);mix-blend-mode:normal}
+.gal-frame.is-empty{--fw:24px;--slip:6px;width:min(26vh,250px,40vw);aspect-ratio:4/5;opacity:.88}
+.gal-frame.has-art{height:min(50vh,560px);aspect-ratio:4/5}
+.gal-frame.has-art.is-sized{aspect-ratio:var(--r);height:auto;width:min(58vw,740px,calc(50vh * var(--r)),calc(560px * var(--r)))}
+.gal-frame img{display:block;width:100%;height:100%;object-fit:contain;background:#14100c}
+/* No artwork yet: a quiet, unprimed linen canvas that stays in the wall's shadows. */
+.gal-blank{position:relative;width:100%;height:100%;display:grid;place-items:center;padding:0 14%;text-align:center;background:radial-gradient(90% 70% at 50% 30%,#3a3128 0%,#29221b 70%,#211b15 100%)}
+.gal-blank::before{content:"";position:absolute;inset:0;opacity:.4;background:repeating-linear-gradient(0deg,oklch(1 0 0 / .05) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,oklch(0 0 0 / .13) 0 1px,transparent 1px 3px)}
+.gal-blank span{position:relative;font-family:var(--font-display);font-style:italic;font-size:14px;line-height:1.45;letter-spacing:.2px;color:oklch(.84 .03 80 / .42)}
+/* Plaque: antique brushed brass with engraved lettering, toned down to sit in the low light. */
+.gal-plaque{position:relative;margin-top:28px;min-width:220px;max-width:min(380px,80vw);padding:10px 34px 9px;text-align:center;display:flex;flex-direction:column;gap:3px;background:repeating-linear-gradient(90deg,oklch(1 0 0 / .035) 0 1px,transparent 1px 3px),linear-gradient(180deg,#a68d59 0%,#957c48 42%,#83693b 70%,#94794a 100%);border:1px solid #54421f;border-radius:1px;box-shadow:inset 0 1px 0 oklch(.95 .06 90 / .35),inset 0 -1px 0 oklch(.3 .05 70 / .5),inset 0 0 0 3px oklch(.35 .05 70 / .12),0 8px 18px oklch(0 0 0 / .6);color:#2b2010}
+.gal-plaque>*{text-shadow:0 1px 0 oklch(.88 .07 88 / .22)}
+.gal-screw{position:absolute;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e6d3a0,#8f7540 60%,#5a4520);box-shadow:inset 0 0 0 .5px oklch(0 0 0 / .3),0 1px 0 oklch(1 0 0 / .15)}.gal-screw:first-child{left:11px}.gal-screw:nth-child(2){right:11px}
+.gal-plaque-title{font-family:var(--font-display);font-style:italic;font-size:17px;line-height:1.2;letter-spacing:.2px}
+.gal-plaque-artist{font-family:var(--font-display);font-weight:600;font-size:11px;letter-spacing:2.4px;text-transform:uppercase}
+.gal-plaque-details{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:#3e3017}
 .gal-description{margin-top:16px;max-width:520px;text-align:center;font-family:var(--font-display);font-size:16px;line-height:1.6;color:oklch(.85 .02 82 / .72)}
-.gal-footer{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:22px;padding:8px 20px 26px}
-.gal-arrow{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:1px solid oklch(1 0 0 / .16);background:oklch(1 0 0 / .05);color:#e6dac2;cursor:pointer;transition:background .25s,border-color .25s}
-.gal-arrow:hover:not(:disabled){background:oklch(1 0 0 / .12);border-color:oklch(1 0 0 / .32)}
-.gal-arrow:disabled{opacity:.3;cursor:default}
-.gal-progress{display:flex;align-items:center;gap:14px;font-family:var(--font-display);font-size:15px;letter-spacing:1px;color:oklch(.85 .03 82 / .8)}
-.gal-dots{display:flex;gap:8px}.gal-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:0;background:oklch(1 0 0 / .25);cursor:pointer;transition:width .3s,background .3s}.gal-dots button[aria-current=true]{width:24px;border-radius:4px;background:#e8cf8f}
-@media(max-width:700px){.gal-close span{display:none}.gal-close{width:42px;padding:0;justify-content:center;top:14px;left:14px}.gal-slide{padding:0 5vw}.gal-frame{height:auto;width:min(76vw,340px);padding:9px}.gal-plaque{min-width:0;padding:8px 26px}.gal-plaque-title{font-size:16px}.gal-wing{width:22%}}
+.gal-footer{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:26px;padding:6px 20px 24px}
+.gal-arrow{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:1px solid oklch(.8 .08 80 / .32);background:radial-gradient(circle at 50% 35%,oklch(.3 .03 70 / .55),oklch(.12 .01 60 / .55));color:#e2c98c;cursor:pointer;box-shadow:inset 0 1px 0 oklch(1 0 0 / .06),0 6px 14px oklch(0 0 0 / .45);transition:border-color .25s,color .25s,box-shadow .25s,opacity .25s}
+.gal-arrow:hover:not(:disabled){border-color:oklch(.85 .09 82 / .7);color:#f4e2b0;box-shadow:inset 0 1px 0 oklch(1 0 0 / .08),0 0 18px oklch(.8 .1 80 / .18),0 6px 14px oklch(0 0 0 / .45)}
+.gal-arrow:focus-visible{outline:2px solid #e2c98c;outline-offset:3px}
+.gal-arrow:disabled{opacity:.25;cursor:default}
+.gal-progress{display:flex;flex-direction:column;align-items:center;gap:9px}
+.gal-count{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-size:14px;letter-spacing:1.5px;color:oklch(.8 .03 80 / .55)}
+.gal-count b{font-weight:500;color:#ead39a}
+.gal-count i{display:block;width:18px;height:1px;background:oklch(.8 .06 80 / .4)}
+.gal-dots{display:flex;gap:7px}.gal-dots button{width:6px;height:6px;padding:0;border-radius:3px;border:0;background:oklch(.85 .04 80 / .22);cursor:pointer;transition:width .45s cubic-bezier(.3,.7,.2,1),background .3s}.gal-dots button:hover{background:oklch(.85 .06 80 / .45)}.gal-dots button[aria-current=true]{width:22px;background:#d9bd7c;box-shadow:0 0 8px oklch(.8 .1 80 / .35)}
+@media(max-width:700px){.gal-close span{display:none}.gal-close{width:42px;padding:0;justify-content:center;top:14px;left:14px}.gal-slide{padding:0 5vw}.gal-frame{--fw:20px;--slip:5px}.gal-frame.has-art{height:auto;width:min(70vw,320px)}.gal-frame.has-art.is-sized{width:min(72vw,calc(46vh * var(--r)))}.gal-frame.is-empty{--fw:16px;width:min(42vw,180px)}.gal-footer{gap:18px}.gal-plaque{min-width:0;padding:8px 26px}.gal-plaque-title{font-size:15px}.gal-wing{width:22%}.gal-fixture-l{left:22vw}.gal-fixture-r{right:22vw}.gal-beam{width:34vw;height:46vh}.gal-beam-l{left:calc(5vw + 13px);transform:rotate(-14deg)}.gal-beam-r{right:calc(5vw + 13px);transform:rotate(14deg)}.gal-wash{display:none}}
 
 /* ── Stage 5 refinements: room tilt ──────────────────────────────── */
 .room-tools button[aria-pressed=true]{background:var(--primary);color:var(--primary-foreground)}
-.tilt-pad{position:absolute;left:50%;transform:translateX(-50%);bottom:78px;z-index:8;max-width:430px;padding:12px 16px;border-radius:14px;background:color-mix(in oklch,var(--background) 88%,transparent);backdrop-filter:blur(12px);border:1px solid var(--border);box-shadow:var(--shadow);animation:fade-up .3s ease both;display:flex;align-items:center;gap:14px}
+.tilt-pad{position:absolute;left:12px;right:12px;margin:0 auto;width:fit-content;bottom:78px;z-index:8;max-width:460px;padding:12px 16px;border-radius:14px;background:color-mix(in oklch,var(--background) 88%,transparent);backdrop-filter:blur(12px);border:1px solid var(--border);box-shadow:var(--shadow);animation:fade-up .3s ease both;display:flex;align-items:center;gap:14px}
 .tilt-pad p{margin:0;font-size:11px;line-height:1.5;color:var(--muted-foreground)}
 .tilt-pad .eyebrow{display:block;margin-bottom:3px}
-@media(max-width:640px){.tilt-pad{left:16px;right:16px;transform:none;max-width:none;bottom:70px}}
+.tilt-pad button{flex:none;min-height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--border);background:transparent;font:inherit;font-size:12px;color:var(--foreground);cursor:pointer}
+.tilt-pad button:hover{background:var(--muted)}
+.tilt-pad .tilt-done{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground)}
+.tilt-button{width:36px;height:36px;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:var(--foreground);cursor:pointer}
+.tilt-button:hover{background:var(--muted)}
+@media(max-width:640px){.tilt-pad{left:12px;right:12px;width:auto;max-width:none;bottom:70px;gap:8px;padding:10px 12px}.tilt-pad p{font-size:10.5px}}
 
 /* ── Stage 5: drawer tray, motion toggle, desk notes ─────────────── */
 .drawer-tray{position:absolute;left:12px;right:12px;margin:0 auto;bottom:76px;z-index:8;max-width:560px;padding:16px 18px 18px;border-radius:16px;background:color-mix(in oklch,var(--background) 88%,transparent);backdrop-filter:blur(12px);border:1px solid var(--border);box-shadow:var(--shadow);animation:fade-up .35s ease both}

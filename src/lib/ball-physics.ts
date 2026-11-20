@@ -77,5 +77,29 @@ export function stepBall(b: BallState, dt: number, gravity: Vector3, colliders =
   return grounded;
 }
 
+/**
+ * Moves a held ball toward `target` (where the pointer is) without letting it pass through walls or
+ * furniture: it travels in short hops and is pushed back out sideways after each one, so it slides
+ * along whatever it meets instead of tunnelling through it.
+ */
+export function dragBall(b: BallState, target: Vector3, colliders = COLLIDERS) {
+  const R = BALL_RADIUS; const { p } = b;
+  d.copy(target).sub(p); const len = d.length(); if (len < 1e-6) return;
+  const steps = Math.ceil(len / (R * 0.35)); d.divideScalar(steps);
+  for (let i = 0; i < steps; i++) {
+    p.add(d);
+    p.x = Math.min(ROOM.maxX - R, Math.max(ROOM.minX + R, p.x)); p.z = Math.min(ROOM.maxZ - R, Math.max(ROOM.minZ + R, p.z));
+    p.y = Math.max(floorAt(p.x, p.z) + R, p.y);
+    for (const bx of colliders) {
+      c.copy(p).clamp(bx.min, bx.max); axis.copy(p).sub(c); axis.y = 0; const dist = axis.length();
+      if (p.y + R <= bx.min.y || p.y - R >= bx.max.y || dist >= R) continue; // above, below or clear of it
+      if (dist < 1e-5) { // centre got inside: leave by the nearest side face
+        const faces = [[p.x - bx.min.x, -1, 'x'], [bx.max.x - p.x, 1, 'x'], [p.z - bx.min.z, -1, 'z'], [bx.max.z - p.z, 1, 'z']] as const;
+        const [, dir, ax] = faces.reduce((m, f) => (f[0] < m[0] ? f : m)); p[ax] = dir < 0 ? bx.min[ax] - R : bx.max[ax] + R;
+      } else p.addScaledVector(axis.divideScalar(dist), R - dist);
+    }
+  }
+}
+
 /** True when the ball has effectively stopped and can be left unsimulated. */
 export const atRest = (b: BallState, grounded: boolean) => grounded && b.v.lengthSq() < 0.0009;

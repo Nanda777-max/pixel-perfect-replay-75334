@@ -66,4 +66,15 @@ describe('room tilt and the gravity it creates', () => {
     expect(tiltTarget.x).toBe(0);
     expect(tiltTarget.z).toBe(0);
   });
+  it('tips toward any floor direction: tip(+x) lowers the +x side and the ball rolls that way', () => {
+    roomTilt.enable(); tiltTarget.x = 0; tiltTarget.z = 0;
+    roomTilt.tip(100, 0);
+    expect(tiltTarget.z).toBeLessThan(0); expect(tiltTarget.x).toBe(0);
+    const { b } = roll(tiltTarget.x, tiltTarget.z);
+    expect(b.p.x).toBeGreaterThan(SPAWN.x + 0.1);
+    roomTilt.reset(); roomTilt.tip(0, -100); // far side down
+    expect(tiltTarget.x).toBeLessThan(0);
+    expect(roll(tiltTarget.x, tiltTarget.z).b.p.z).toBeLessThan(SPAWN.z - 0.1);
+    roomTilt.disable();
+  });
 });

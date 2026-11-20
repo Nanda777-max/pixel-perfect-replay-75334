@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="150" height="150" viewBox="0 0 150 150">
+  <!-- A carved, gilded museum frame for CSS border-image (slice 42, round). Each edge is the same
+       band rotated: rounded outer rim, a frieze of carved leaves and rosettes, a bead moulding,
+       a bright fillet and a shadowed sight edge. Corners carry a carved boss. Original drawing. -->
+  <defs>
+    <linearGradient id="rim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="8">
+      <stop offset="0" stop-color="#3a2a10"/><stop offset=".35" stop-color="#cfae64"/><stop offset=".7" stop-color="#86642a"/><stop offset="1" stop-color="#3b2b10"/>
+    </linearGradient>
+    <linearGradient id="frz" gradientUnits="userSpaceOnUse" x1="0" y1="8" x2="0" y2="27">
+      <stop offset="0" stop-color="#4b3613"/><stop offset=".45" stop-color="#6e5020"/><stop offset="1" stop-color="#40300f"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dcbd76"/><stop offset=".5" stop-color="#a9823a"/><stop offset="1" stop-color="#5a3f17"/>
+    </linearGradient>
+    <radialGradient id="bead" cx=".38" cy=".32" r=".7">
+      <stop offset="0" stop-color="#e8cf8e"/><stop offset=".55" stop-color="#9c7634"/><stop offset="1" stop-color="#4f3a15"/>
+    </radialGradient>
+    <linearGradient id="sight" gradientUnits="userSpaceOnUse" x1="0" y1="37" x2="0" y2="42">
+      <stop offset="0" stop-color="#9a7a3e"/><stop offset=".45" stop-color="#3a2a12"/><stop offset="1" stop-color="#110b05"/>
+    </linearGradient>
+    <radialGradient id="boss" cx=".4" cy=".35" r=".7">
+      <stop offset="0" stop-color="#e6cb88"/><stop offset=".5" stop-color="#97712e"/><stop offset="1" stop-color="#4a3512"/>
+    </radialGradient>
+
+    <!-- One carved leaf scroll, running from the rosette toward the tile edge. -->
+    <path id="scroll" d="M69 17.5 C64 9.5 55 9 47.5 14.2 C53 13 60 14.6 69 17.5 Z M69 17.5 C64 25.5 55 26 47.5 20.8 C53 22 60 20.4 69 17.5 Z M60 17.5 C57 15.6 53.5 15.6 51 17.5 C53.5 19.4 57 19.4 60 17.5 Z"/>
+    <g id="motif">
+      <g fill="#24180a" opacity=".65" transform="translate(.8 1)">
+        <use xlink:href="#scroll"/><use xlink:href="#scroll" transform="translate(150 0) scale(-1 1)"/>
+        <circle cx="75" cy="17.5" r="5.6"/>
+      </g>
+      <g fill="url(#leaf)" stroke="#4a3412" stroke-width=".45">
+        <use xlink:href="#scroll"/><use xlink:href="#scroll" transform="translate(150 0) scale(-1 1)"/>
+        <circle cx="75" cy="17.5" r="5.6"/>
+      </g>
+      <g fill="#dcc283">
+        <circle cx="75" cy="17.5" r="2.1"/>
+        <circle cx="72.4" cy="13.8" r="1"/><circle cx="77.6" cy="13.8" r="1"/><circle cx="72.4" cy="21.2" r="1"/><circle cx="77.6" cy="21.2" r="1"/>
+      </g>
+      <!-- Half-balls at the tile edges join into a whole ball between repeats. -->
+      <circle cx="42" cy="17.5" r="2.6" fill="url(#bead)"/><circle cx="108" cy="17.5" r="2.6" fill="url(#bead)"/>
+    </g>
+
+    <g id="edge">
+      <rect x="0" y="0" width="150" height="8" fill="url(#rim)"/>
+      <rect x="0" y="8" width="150" height="1.2" fill="#24180a"/>
+      <rect x="0" y="9.2" width="150" height="17" fill="url(#frz)"/>
+      <use xlink:href="#motif"/>
+      <rect x="0" y="26.2" width="150" height="1.4" fill="#24180a"/>
+      <rect x="0" y="27.6" width="150" height="7.6" fill="#5c431a"/>
+      <g fill="url(#bead)">
+        <circle cx="45.3" cy="31.4" r="2.75"/><circle cx="51.9" cy="31.4" r="2.75"/><circle cx="58.5" cy="31.4" r="2.75"/><circle cx="65.1" cy="31.4" r="2.75"/><circle cx="71.7" cy="31.4" r="2.75"/>
+        <circle cx="78.3" cy="31.4" r="2.75"/><circle cx="84.9" cy="31.4" r="2.75"/><circle cx="91.5" cy="31.4" r="2.75"/><circle cx="98.1" cy="31.4" r="2.75"/><circle cx="104.7" cy="31.4" r="2.75"/>
+      </g>
+      <rect x="0" y="35.2" width="150" height="2" fill="#b89552"/>
+      <rect x="0" y="37.2" width="150" height="4.8" fill="url(#sight)"/>
+    </g>
+
+    <!-- Carved corner boss: a raised rosette over a mitred block. -->
+    <g id="corner">
+      <rect x="0" y="0" width="42" height="42" fill="#4d3815"/>
+      <path d="M0 0 H42 V8 H8 V42 H0 Z" fill="#a98a4a"/>
+      <path d="M0 0 H42 V2.5 H2.5 V42 H0 Z" fill="#3a2a10"/>
+      <path d="M8 8 H42 V9.2 H9.2 V42 H8 Z" fill="#24180a"/>
+      <rect x="34" y="34" width="8" height="8" fill="#140d06"/>
+      <path d="M35.2 42 V35.2 H42 V37.2 H37.2 V42 Z" fill="#b89552"/>
+      <g transform="translate(22 22)">
+        <g fill="#24180a" opacity=".6" transform="translate(.9 1.1)">
+          <circle r="12.5"/>
+        </g>
+        <g fill="url(#leaf)" stroke="#4a3412" stroke-width=".45">
+          <ellipse rx="3.6" ry="7.6" transform="rotate(0) translate(0 -7)"/><ellipse rx="3.6" ry="7.6" transform="rotate(45) translate(0 -7)"/>
+          <ellipse rx="3.6" ry="7.6" transform="rotate(90) translate(0 -7)"/><ellipse rx="3.6" ry="7.6" transform="rotate(135) translate(0 -7)"/>
+          <ellipse rx="3.6" ry="7.6" transform="rotate(180) translate(0 -7)"/><ellipse rx="3.6" ry="7.6" transform="rotate(225) translate(0 -7)"/>
+          <ellipse rx="3.6" ry="7.6" transform="rotate(270) translate(0 -7)"/><ellipse rx="3.6" ry="7.6" transform="rotate(315) translate(0 -7)"/>
+        </g>
+        <circle r="5.4" fill="url(#boss)" stroke="#4a3412" stroke-width=".5"/>
+        <circle r="2" cx="-1.2" cy="-1.4" fill="#efd99c" opacity=".8"/>
+      </g>
+    </g>
+  </defs>
+
+  <use xlink:href="#edge"/>
+  <use xlink:href="#edge" transform="rotate(90 75 75)"/>
+  <use xlink:href="#edge" transform="rotate(180 75 75)"/>
+  <use xlink:href="#edge" transform="rotate(270 75 75)"/>
+  <use xlink:href="#corner"/>
+  <use xlink:href="#corner" transform="rotate(90 75 75)"/>
+  <use xlink:href="#corner" transform="rotate(180 75 75)"/>
+  <use xlink:href="#corner" transform="rotate(270 75 75)"/>
+</svg>

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Quaternion, Vector3 } from 'three';
-import { atRest, BALL_RADIUS as R, COLLIDERS, GRAVITY, ROOM, floorAt, stepBall, type BallState } from '@/lib/ball-physics';
+import { atRest, BALL_RADIUS as R, COLLIDERS, GRAVITY, ROOM, dragBall, floorAt, stepBall, type BallState } from '@/lib/ball-physics';
 
 const down = new Vector3(0, -GRAVITY, 0);
 const ball = (p: [number, number, number], v: [number, number, number] = [0, 0, 0]): BallState => ({ p: new Vector3(...p), v: new Vector3(...v), q: new Quaternion() });
@@ -42,5 +42,17 @@ describe('ball physics', () => {
   it('rolls downhill when gravity is tilted (phone tilt)', () => {
     const b = ball([0, R, 2.6]); const tilted = new Vector3(GRAVITY * 0.5, -GRAVITY, 0); run(b, 0.6, tilted);
     expect(b.p.x).toBeGreaterThan(0.3);
+  });
+  it('cannot be dragged through furniture: it slides along the bookshelf instead', () => {
+    const shelf = COLLIDERS.find(c => c.max.y === 2.6)!; const b = ball([3.2, 0.55, 0]);
+    dragBall(b, new Vector3(3.2, 0.55, -3.3));
+    expect(b.p.z).toBeGreaterThanOrEqual(shelf.max.z + R - 1e-3);
+    for (let i = 0; i < 3; i++) dragBall(b, new Vector3(1.9, 0.55, -3.3)); // pointer keeps moving: once past the shelf it reaches the wall
+    expect(b.p.x).toBeLessThan(shelf.min.x); expect(b.p.z).toBeCloseTo(ROOM.minZ + R, 3);
+  });
+  it('cannot be dragged through a desk leg or out of the room', () => {
+    const b = ball([-2.88, 0.55, -1.2]); dragBall(b, new Vector3(-2.88, 0.55, -2.2));
+    expect(Math.abs(b.p.z - -1.74)).toBeGreaterThanOrEqual(0.07 + R - 1e-3);
+    dragBall(b, new Vector3(-9, 0.55, 9)); expect(b.p.x).toBeGreaterThanOrEqual(ROOM.minX + R - 1e-6); expect(b.p.z).toBeLessThanOrEqual(ROOM.maxZ - R + 1e-6);
   });
 });

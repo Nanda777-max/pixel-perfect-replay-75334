@@ -12,7 +12,8 @@ import { Curtains } from './Curtains';
 import { FramedDisplay, GlobeTable, LaptopScreen, PortraitFrame, PosterWall, Turntable, WarmLamp } from './RoomObjects';
 import { drawEducationCard, drawJourneyTimeline, drawResearchPreview } from './frameArt';
 import { frameImages } from '@/content/parse';
-import { Ball, DeskAccessories, DeskWithDrawer, EaselArt, MemoryCabinet, Plants, SceneLights, WallClock } from './RoomLife';
+import { Ball, DeskAccessories, DeskWithDrawer, EaselArt, MemoryCabinet, Plants, RoomTiltInput, SceneLights, TiltingRoom, WallClock } from './RoomLife';
+import { useRoomTilt } from '@/lib/room-tilt';
 import { withBase } from '@/content/media';
 import desk from '@/assets/models/desk.glb.asset.json';
 import laptop from '@/assets/models/laptop.glb.asset.json';
@@ -60,9 +61,11 @@ function CameraRig({reset,zoom,selected}:Pick<RoomProps,'reset'|'zoom'|'selected
  const clamp=()=>{const c=controls.current;if(!c||tween.current)return;const t=c.target;const before=t.clone();t.clamp(ROOM_MIN,ROOM_MAX);if(!before.equals(t))camera.position.add(t.clone().sub(before));};
  return <OrbitControls ref={controls} makeDefault target={home.toArray()} enablePan screenSpacePanning zoomToCursor panSpeed={.8} minDistance={4} maxDistance={Math.max(26,distance+4)} minPolarAngle={.35} maxPolarAngle={1.35} minAzimuthAngle={-.9} maxAzimuthAngle={1.35} enableDamping dampingFactor={.08} onStart={()=>{tween.current=null;}} onChange={clamp}/>;
 }
-function Scene(props:RoomProps&{ready:()=>void;reduced:boolean}){const {onSelect,evening,lampOn,onLamp,reduced}=props;const [colours]=useState(()=>Object.fromEntries(['wood','wood-light','room-wall','sage','rose','butter','ink','paper','scene-background'].map(k=>[k,new Color(tokenColour(k))])));const c=(k:string)=>colours[k]?.getStyle()??'white';const textures=useMemo(()=>({wood:roomTexture('wood'),paper:roomTexture('paper'),rug:roomTexture('rug')}),[]);const ready=useRef(false);
+function Scene(props:RoomProps&{ready:()=>void;reduced:boolean}){const {onSelect,evening,lampOn,onLamp,reduced}=props;const [colours]=useState(()=>Object.fromEntries(['wood','wood-light','room-wall','sage','rose','butter','ink','paper','scene-background'].map(k=>[k,new Color(tokenColour(k))])));const c=(k:string)=>colours[k]?.getStyle()??'white';const textures=useMemo(()=>({wood:roomTexture('wood'),paper:roomTexture('paper'),rug:roomTexture('rug')}),[]);const ready=useRef(false);const tilting=useRoomTilt();
  useFrame(()=>{if(!ready.current){ready.current=true;requestAnimationFrame(props.ready);}});
  return <><color attach="background" args={[c('scene-background')]}/><SceneLights evening={evening} gallery={props.selected==='artwork'} colours={{paper:c('paper'),sage:c('sage')}}/><Environment resolution={64}><Lightformer position={[0,5,0]} scale={[10,10,1]} intensity={2}/><Lightformer position={[-5,2,0]} rotation-y={Math.PI/2} scale={[10,5,1]} intensity={1} color={c('sage')}/></Environment>
+ {/* Everything physical sits inside the tilting room: tipping it changes the ball's gravity. */}
+ <TiltingRoom reduced={reduced}>
  <Block at={[0,-.2,0]} size={[8.6,.35,7]} colour={c('wood')} texture={textures.wood}/><Block at={[0,-.01,0]} size={[8.4,.05,6.8]} colour={c('wood-light')} texture={textures.wood}/>
  {/* Open-front dollhouse architecture; true 3D objects remain explorable. */}
  <Block at={[1.3,1.85,-3.5]} size={[6,3.8,.16]} colour={c('room-wall')} texture={textures.paper}/><Block at={[-4.3,1.85,1]} size={[.16,3.8,5]} colour={c('room-wall')} texture={textures.paper}/>
@@ -88,6 +91,8 @@ function Scene(props:RoomProps&{ready:()=>void;reduced:boolean}){const {onSelect
  <GlobeTable position={[2.5,0,2.3]} onSelect={onSelect} reduced={reduced}/>
  <Hotspot at={[-1.15,2.15,-2.1]} id="projects" onSelect={onSelect} label="Explore my projects"/><Hotspot at={[1,2.35,-3.2]} id="guestbook" onSelect={onSelect} label="Leave a note"/><Hotspot at={[3.2,2.7,-2.3]} id="books" onSelect={onSelect} label="On my bookshelf"/><Hotspot at={[-3.4,2.2,.6]} id="artwork" onSelect={onSelect} label="Explore artwork"/><Hotspot at={[3.15,1.35,.45]} id="music" onSelect={onSelect} label="Browse music"/><Hotspot at={[-3.2,2.9,-3.25]} id="balcony" onSelect={onSelect} label="A little piece of home"/>
  <EaselArt/><Plants reduced={reduced}/><MemoryCabinet openDrawer={props.openDrawer} onDrawer={props.onDrawer} reduced={reduced}/><WallClock position={[3.25,3.15,-3.38]} reduced={reduced}/><Suspense fallback={null}><Ball reduced={reduced}/></Suspense>
+ </TiltingRoom>
+ <RoomTiltInput on={tilting}/>
  <CameraRig reset={props.reset} zoom={props.zoom} selected={props.selected}/></>;
 }
 export default function Room(props:RoomProps){const [ready,setReady]=useState(false);const [reduced,setReduced]=useState(false);useEffect(()=>{setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);},[]);return <div className="scene-wrap" data-scene-ready={ready?'true':undefined}><Canvas shadows dpr={[1,1.5]} camera={{position:[10,8,11],fov:38}} gl={{antialias:true}}><Scene {...props} reduced={reduced} ready={()=>setReady(true)}/></Canvas></div>;}

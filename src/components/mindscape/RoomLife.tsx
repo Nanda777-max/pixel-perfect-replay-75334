@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
-import { AmbientLight, Box3, CanvasTexture, DirectionalLight, Group, HemisphereLight, Mesh, MeshStandardMaterial, Object3D, Plane, PlaneGeometry, Quaternion, SpotLight, SRGBColorSpace, Vector2, Vector3 } from 'three';
+import { AmbientLight, Box3, CanvasTexture, DirectionalLight, Group, HemisphereLight, Matrix4, Mesh, MeshStandardMaterial, Object3D, Plane, PlaneGeometry, Quaternion, Ray, SRGBColorSpace, Vector2, Vector3 } from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { SceneLabel } from './SceneLabel';
 import { useSafeTexture } from './RoomObjects';
@@ -13,7 +13,8 @@ import { existingImage, withBase } from '@/content/media';
 import { drawerObjects } from '@/content/drawers';
 import { deskNotes } from '@/content/desk';
 import { motion, shakeQueue } from '@/lib/motion';
-import { atRest, BALL_RADIUS, GRAVITY, ROOM, SPAWN, stepBall } from '@/lib/ball-physics';
+import { atRest, BALL_RADIUS, dragBall, GRAVITY, roomGravity, SPAWN, stepBall } from '@/lib/ball-physics';
+import { MAX_TILT, roomTilt, tiltApplied, tiltHold, tiltTarget } from '@/lib/room-tilt';
 import type { Section } from '@/content/room';
 
 type Vec = [number, number, number];
@@ -24,24 +25,20 @@ function useHoverCursor(cursor = 'pointer') {
   return { hover, bind: { onPointerOver: (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHover(true); document.body.style.cursor = cursor; }, onPointerOut: () => { setHover(false); document.body.style.cursor = 'auto'; } } };
 }
 
-// ── Lights: normal room lighting, dimmed with a warm spotlight while the gallery is open ──────
+// ── Lights: normal room lighting, gently dimmed while the gallery is open ─────────────────────
 export function SceneLights({ evening, gallery, colours }: { evening: boolean; gallery: boolean; colours: { paper: string; sage: string } }) {
-  const amb = useRef<AmbientLight>(null); const hemi = useRef<HemisphereLight>(null); const sun = useRef<DirectionalLight>(null); const spot = useRef<SpotLight>(null);
-  const target = useMemo(() => { const o = new Object3D(); o.position.set(-3.41, 1.35, 0.62); return o; }, []);
+  const amb = useRef<AmbientLight>(null); const hemi = useRef<HemisphereLight>(null); const sun = useRef<DirectionalLight>(null);
   useFrame(({ scene }, dt) => {
     const a = ease(dt, 3); const dim = gallery ? 0.38 : 1;
     scene.environmentIntensity += ((gallery ? 0.3 : 1) - scene.environmentIntensity) * a; // the room's ambient reflections
     if (amb.current) amb.current.intensity += ((evening ? 0.75 : 1.1) * dim - amb.current.intensity) * a;
     if (hemi.current) hemi.current.intensity += (1.4 * dim - hemi.current.intensity) * a;
     if (sun.current) sun.current.intensity += ((evening ? 1.4 : 2.5) * dim - sun.current.intensity) * a;
-    if (spot.current) spot.current.intensity += ((gallery ? 40 : 0) - spot.current.intensity) * a;
   });
   return <>
     <ambientLight ref={amb} intensity={evening ? 0.75 : 1.1} />
     <hemisphereLight ref={hemi} args={[colours.paper, colours.sage, 1.4]} />
     <directionalLight ref={sun} position={[-3, 8, 6]} intensity={evening ? 1.4 : 2.5} color={colours.paper} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-8} shadow-camera-right={8} shadow-camera-top={8} shadow-camera-bottom={-8} />
-    <primitive object={target} />
-    <spotLight ref={spot} position={[-1.6, 3.6, 2.4]} target={target} angle={0.32} penumbra={0.75} distance={9} decay={1.2} intensity={0} color="#ffd9a0" />
   </>;
 }
 
@@ -64,7 +61,7 @@ export function Ball({ reduced }: { reduced: boolean }) {
   const { camera, gl, raycaster } = useThree();
   const controls = useThree(s => s.controls) as unknown as OrbitControlsImpl | null;
   const sim = useMemo(() => ({ p: SPAWN.clone(), v: new Vector3(), q: new Quaternion(), awake: false, dragging: false, samples: [] as { t: number; p: Vector3 }[] }), []);
-  const tmp = useMemo(() => ({ right: new Vector3(), fwd: new Vector3(), g: new Vector3(), hit: new Vector3(), ndc: new Vector2(), plane: new Plane(new Vector3(0, 1, 0), -0.55) }), []);
+  const tmp = useMemo(() => ({ right: new Vector3(), fwd: new Vector3(), g: new Vector3(), hit: new Vector3(), goal: new Vector3(), ndc: new Vector2(), ray: new Ray(), inv: new Matrix4(), plane: new Plane(new Vector3(0, 1, 0), -0.55) }), []);
   const { hover, bind } = useHoverCursor('grab');
 
   // Drag with mouse or finger; the release speed decides the throw.
@@ -72,15 +69,20 @@ export function Ball({ reduced }: { reduced: boolean }) {
     const el = gl.domElement;
     const toFloor = (cx: number, cy: number) => {
       const r = el.getBoundingClientRect(); tmp.ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
-      raycaster.setFromCamera(tmp.ndc, camera); return raycaster.ray.intersectPlane(tmp.plane, tmp.hit);
+      raycaster.setFromCamera(tmp.ndc, camera);
+      // The ball lives inside the (possibly tilted) room, so find the pointer in the room's own frame.
+      const parent = mesh.current?.parent; tmp.ray.copy(raycaster.ray);
+      if (parent) tmp.ray.applyMatrix4(tmp.inv.copy(parent.matrixWorld).invert());
+      return tmp.ray.intersectPlane(tmp.plane, tmp.hit);
     };
     const move = (e: PointerEvent) => {
       if (!sim.dragging) return; const p = toFloor(e.clientX, e.clientY); if (!p) return;
-      p.x = Math.min(ROOM.maxX - R, Math.max(ROOM.minX + R, p.x)); p.z = Math.min(ROOM.maxZ - R, Math.max(ROOM.minZ + R, p.z));
-      sim.p.lerp(p, 0.6); const now = performance.now(); sim.samples.push({ t: now, p: sim.p.clone() }); while (sim.samples.length > 2 && now - sim.samples[0]!.t > 110) sim.samples.shift();
+      dragBall(sim, tmp.goal.copy(sim.p).lerp(p, 0.6)); // follows the pointer, but slides around furniture
+      // Remember the last ~110 ms of movement: the release speed becomes the throw.
+      const now = performance.now(); sim.samples.push({ t: now, p: sim.p.clone() }); while (sim.samples.length > 2 && now - sim.samples[0]!.t > 110) sim.samples.shift();
     };
     const up = () => {
-      if (!sim.dragging) return; sim.dragging = false; document.body.style.cursor = 'auto'; if (controls) controls.enabled = true;
+      if (!sim.dragging) return; sim.dragging = false; tiltHold.active = false; document.body.style.cursor = 'auto'; if (controls) controls.enabled = !roomTilt.isOn();
       const s = sim.samples; const a = s[0], b = s[s.length - 1];
       if (a && b && b.t - a.t > 8) { sim.v.copy(b.p).sub(a.p).multiplyScalar(1000 / (b.t - a.t)); sim.v.y = 0; const speed = Math.min(sim.v.length(), 14); sim.v.setLength(speed); sim.v.y = Math.min(3.2, speed * 0.18); }
       sim.awake = true;
@@ -91,9 +93,10 @@ export function Ball({ reduced }: { reduced: boolean }) {
 
   const step = (dt: number) => {
     const t = motion.get();
-    // Gravity, tipped sideways by the phone's tilt (relative to how the screen is looking at the room).
+    // Gravity as felt inside the room: tipped by the room tilt actually drawn this frame, plus the
+    // phone's tilt (relative to how the screen is looking at the room). Camera orbit never enters here.
     camera.getWorldDirection(tmp.fwd); tmp.fwd.y = 0; tmp.fwd.normalize(); tmp.right.set(-tmp.fwd.z, 0, tmp.fwd.x);
-    tmp.g.set(0, -G, 0).addScaledVector(tmp.right, t.tiltX * G * 0.7).addScaledVector(tmp.fwd, -t.tiltY * G * 0.7);
+    roomGravity(G, tiltApplied.x, tiltApplied.z, tmp.g).addScaledVector(tmp.right, t.tiltX * G * 0.7).addScaledVector(tmp.fwd, -t.tiltY * G * 0.7);
     return stepBall(sim, dt, tmp.g);
   };
 
@@ -103,12 +106,13 @@ export function Ball({ reduced }: { reduced: boolean }) {
       const s = shakeQueue.shift()!; camera.getWorldDirection(tmp.fwd); tmp.fwd.y = 0; tmp.fwd.normalize(); tmp.right.set(-tmp.fwd.z, 0, tmp.fwd.x);
       sim.v.addScaledVector(tmp.right, s.x * s.strength * 5).addScaledVector(tmp.fwd, -s.y * s.strength * 5); sim.v.y += s.strength * 2.5; sim.awake = true;
     }
-    if (Math.abs(t.tiltX) + Math.abs(t.tiltY) > 0.02) sim.awake = true;
+    const tilted = Math.abs(t.tiltX) + Math.abs(t.tiltY) > 0.02 || Math.abs(tiltApplied.x) + Math.abs(tiltApplied.z) > 0.004;
+    if (tilted) sim.awake = true;
     if (sim.dragging) { sim.v.set(0, 0, 0); sim.awake = true; }
     else if (sim.awake && !reduced) {
       const dt = Math.min(delta, 1 / 30); const n = 4; let grounded = false;
       for (let i = 0; i < n; i++) grounded = step(dt / n);
-      if (atRest(sim, grounded) && Math.abs(t.tiltX) + Math.abs(t.tiltY) < 0.02) { sim.v.set(0, 0, 0); sim.awake = false; } // rest: stop simulating
+      if (atRest(sim, grounded) && !tilted) { sim.v.set(0, 0, 0); sim.awake = false; } // rest: stop simulating
       if (sim.p.y < -2 || !Number.isFinite(sim.p.x)) { sim.p.copy(SPAWN); sim.v.set(0, 0, 0); }
     }
     if (mesh.current) { mesh.current.position.copy(sim.p); mesh.current.quaternion.copy(sim.q); }
@@ -122,10 +126,55 @@ export function Ball({ reduced }: { reduced: boolean }) {
     const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; return t;
   }, []);
   return <mesh ref={mesh} position={SPAWN.toArray()} castShadow receiveShadow {...bind}
-    onPointerDown={e => { e.stopPropagation(); sim.dragging = true; sim.samples = [{ t: performance.now(), p: sim.p.clone() }]; if (controls) controls.enabled = false; document.body.style.cursor = 'grabbing'; }}>
+    onPointerDown={e => { e.stopPropagation(); sim.dragging = true; tiltHold.active = true; sim.samples = [{ t: performance.now(), p: sim.p.clone() }]; if (controls) controls.enabled = false; document.body.style.cursor = 'grabbing'; }}>
     <sphereGeometry args={[R, 32, 24]} /><meshStandardMaterial map={tex} roughness={0.55} />
     {hover && !sim.dragging && <SceneLabel position={[0, 0.4, 0]}><div className="tooltip-label">Drag and throw me</div></SceneLabel>}
   </mesh>;
+}
+
+// ── Room tilt ───────────────────────────────────────────────────────────────────────────────
+/**
+ * Tips everything inside it (the room, its furniture and the ball) by the visitor's tilt, easing
+ * toward the target, and records the angle it actually drew so the ball's gravity matches the picture.
+ */
+export function TiltingRoom({ children, reduced }: { children: React.ReactNode; reduced: boolean }) {
+  const g = useRef<Group>(null);
+  useFrame((_, dt) => {
+    const k = reduced ? 1 : ease(dt, 5);
+    tiltApplied.x += (tiltTarget.x - tiltApplied.x) * k; tiltApplied.z += (tiltTarget.z - tiltApplied.z) * k;
+    if (Math.abs(tiltApplied.x) < 1e-4 && tiltTarget.x === 0) tiltApplied.x = 0;
+    if (Math.abs(tiltApplied.z) < 1e-4 && tiltTarget.z === 0) tiltApplied.z = 0;
+    if (g.current) g.current.rotation.set(tiltApplied.x, 0, tiltApplied.z);
+  });
+  return <group ref={g}>{children}</group>;
+}
+
+/**
+ * While tilt mode is on, a drag on the scene tips the room instead of orbiting the camera. The camera
+ * controls are switched off for as long as tilt mode lasts, so the two can never be confused.
+ * Arrow keys tip it too, for keyboards.
+ */
+export function RoomTiltInput({ on }: { on: boolean }) {
+  const { gl } = useThree();
+  const controls = useThree(s => s.controls) as unknown as OrbitControlsImpl | null;
+  useEffect(() => {
+    if (!on) { if (controls) controls.enabled = true; return; }
+    if (controls) controls.enabled = false;
+    const el = gl.domElement; let last: { x: number; y: number } | null = null;
+    const down = (e: PointerEvent) => { if (!tiltHold.active) { last = { x: e.clientX, y: e.clientY }; el.style.cursor = 'grabbing'; } };
+    const move = (e: PointerEvent) => { if (!last || tiltHold.active) return; roomTilt.drag(e.clientX - last.x, e.clientY - last.y); last = { x: e.clientX, y: e.clientY }; };
+    const up = () => { last = null; el.style.cursor = ''; };
+    const key = (e: KeyboardEvent) => {
+      const step = MAX_TILT / 6, k = { ArrowLeft: [step / 0.0018, 0], ArrowRight: [-step / 0.0018, 0], ArrowUp: [0, -step / 0.0018], ArrowDown: [0, step / 0.0018] }[e.key];
+      if (k && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) { e.preventDefault(); roomTilt.drag(-k[0]!, k[1]!); }
+    };
+    el.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); window.addEventListener('keydown', key);
+    return () => {
+      el.removeEventListener('pointerdown', down); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); window.removeEventListener('keydown', key);
+      el.style.cursor = ''; if (controls) controls.enabled = true;
+    };
+  }, [on, gl, controls]);
+  return null;
 }
 
 // ── Wall clock ──────────────────────────────────────────────────────────────────────────────

@@ -141,11 +141,14 @@ Save a square image as `public/images/music/example-track.jpg` and set `albumArt
 },
 ```
 
-3. Reload and click the easel. The camera moves to the easel, the room dims under a warm spotlight, and the gallery opens.
+3. Reload and click the easel. The camera moves to the easel, the room dims, and the gallery opens.
 - **The gold plaque** shows the title in italics, the artist in capitals, then "medium · year". Any empty field is simply left off.
 - **An entry with an empty `title`** stays a "Work in progress" canvas in the carousel.
 - **The order of entries** is the order of the carousel.
 - **The easel in the room** shows the first artwork that has an image.
+- **The frame** is a carved, gilded museum frame (`src/assets/gallery-frame.svg`). It sizes itself to each image's own proportions, so portrait, landscape and square pieces all fit exactly, with nothing cropped or stretched.
+- **An entry with no image** hangs as a quiet dark canvas reading "A new piece is waiting to be hung."
+- **One artwork** hides the arrows and dots; **no artworks at all** shows a single empty frame.
 
 ## 12. Add project screenshots
 1. Save them in `public/images/projects/` using the names already on the project's `Images:` line in `src/content/projects.ts` (for the World Cup predictor: `wc26-1.png`, `wc26-2.png`, `wc26-shap.png`).
@@ -225,8 +228,10 @@ The three loose notes on the desk come from `src/content/desk.ts`. Put text in `
 ## 20. The ball and motion controls
 - **Mouse or finger:** press on the ball, drag it, and let go. The faster you move, the harder it's thrown. It bounces off the walls and furniture, loses energy, and rolls to a stop.
 - **Phones (tilt and shake):** an "Enable motion controls" button appears on touch devices. Nothing is asked until it's pressed; iPhones then show a permission prompt. Tilting the phone rolls the ball "downhill" and a firm shake gives it a push. "Re-centre" makes the current way you're holding the phone count as level. Pressing the button again turns motion off.
-- **Desktop:** drag and throw only, since computers don't have motion sensors. Rotating the camera never changes gravity.
-- **Adjusting the feel:** the physics settings (bounciness, friction) and the furniture outlines it collides with are in `src/lib/ball-physics.ts`.
+- **Tilting the room (desktop and phones):** press the tilt button (the first button in the room tools, bottom right). While it's on, dragging anywhere, or using the arrow keys, tips the whole room up to about 12°, and the ball rolls toward whichever side has gone down, bouncing off furniture and walls. Dragging right lowers the side that looks right from where you're standing. The camera is frozen while tilting, so the two can't be confused. "Level" puts the room flat again and the ball rolls to a stop; "Done" (or Escape) levels it and gives the camera back. Opening any object also turns tilt off.
+- **Rotating the camera never changes gravity.** Only room tilt and phone tilt do.
+- **Dragging the ball** slides it around furniture instead of through it.
+- **Adjusting the feel:** the physics settings (bounciness, friction) and the furniture outlines it collides with are in `src/lib/ball-physics.ts`. How far the room can tilt (`MAX_TILT`) and how fast a drag tips it are in `src/lib/room-tilt.ts`.
 
 ## The GitHub Pages copy
 `.github/workflows/pages.yml` publishes a static copy of the site at `https://nanda777-max.github.io/pixel-perfect-replay-75334/` every time `main` changes, about two minutes after a push. It only runs while the repository is public. On that copy, visitors can read approved guestbook notes but can't post new ones, because GitHub Pages can't run the server code that saves them. Everything else works the same.

@@ -1,10 +1,11 @@
 // What's inside an open drawer: a tray at the bottom of the screen, so the room stays visible.
 // Objects come from src/content/drawers.ts; an empty drawer shows a placeholder.
 import { useEffect, useState } from 'react';
-import { Smartphone, X } from 'lucide-react';
+import { Rotate3d, Smartphone, X } from 'lucide-react';
 import { SafeImage } from './SafeImage';
 import { drawers, drawerObjects, EMPTY_DRAWER_MESSAGE } from '@/content/drawers';
 import { motion, motionSupported, useMotion } from '@/lib/motion';
+import { roomTilt, useRoomTilt } from '@/lib/room-tilt';
 
 export function DrawerTray({ id, onClose }: { id: string; onClose: () => void }) {
   const drawer = drawers.find(d => d.id === id);
@@ -32,5 +33,29 @@ export function MotionToggle() {
     <button onClick={() => (on ? motion.disable() : motion.enable())} aria-pressed={on}><Smartphone size={15} />{on ? 'Motion on: tilt or shake to move the ball' : 'Enable motion controls'}</button>
     {on && <button className="motion-recentre" onClick={() => motion.recalibrate()}>Re-centre</button>}
     {m.status === 'denied' && <span role="status">Motion access was declined. You can still drag and throw the ball.</span>}
+  </div>;
+}
+
+/** The room-tools button that switches tilt mode on and off. */
+export function RoomTiltButton() {
+  const on = useRoomTilt();
+  return <button type="button" className={`tilt-button ${on ? 'is-on' : ''}`} onClick={() => roomTilt.toggle()} aria-pressed={on}
+    title={on ? 'Stop tilting the room' : 'Tilt the room'} aria-label={on ? 'Stop tilting the room' : 'Tilt the room'}><Rotate3d size={18} strokeWidth={1.6} /></button>;
+}
+
+/** Shown while tilt mode is on: what dragging does now, plus Level and Done. */
+export function RoomTiltPad() {
+  const on = useRoomTilt();
+  useEffect(() => {
+    if (!on) return;
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') roomTilt.disable(); };
+    window.addEventListener('keydown', key); return () => window.removeEventListener('keydown', key);
+  }, [on]);
+  if (!on) return null;
+  return <div className="tilt-pad" role="status">
+    <div><span className="eyebrow">Tilting the room</span>
+      <p>Drag anywhere (or use the arrow keys) to tip the room and the ball rolls downhill. The camera stays still until you finish.</p></div>
+    <button type="button" onClick={() => roomTilt.reset()}>Level</button>
+    <button type="button" className="tilt-done" onClick={() => roomTilt.disable()}>Done</button>
   </div>;
 }

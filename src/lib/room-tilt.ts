@@ -27,11 +27,17 @@ export const roomTilt = {
   toggle() { on = !on; if (!on) roomTilt.reset(); emit(); },
   enable() { if (!on) { on = true; emit(); } },
   disable() { if (on) { on = false; roomTilt.reset(); emit(); } },
-  /** Drag the room: right tips its right side down, down tips the near side down. */
-  drag(dx: number, dy: number) {
+  /** Drag the room along its own axes: +x tips its +x side down, +z tips its near (+z) side down. */
+  drag(dx: number, dy: number) { roomTilt.tip(dx, dy); },
+  /**
+   * Tip the room so the side lying in floor direction (wx, wz) goes down, by that many pixels' worth.
+   * The scene converts a screen drag into this direction using the camera's heading, so "drag right"
+   * always lowers whichever side of the room looks like the right-hand side.
+   */
+  tip(wx: number, wz: number) {
     if (!on) return;
-    tiltTarget.z = clamp(tiltTarget.z - dx * SENSITIVITY);
-    tiltTarget.x = clamp(tiltTarget.x + dy * SENSITIVITY);
+    tiltTarget.z = clamp(tiltTarget.z - wx * SENSITIVITY);
+    tiltTarget.x = clamp(tiltTarget.x + wz * SENSITIVITY);
   },
   /** Restore the room's original orientation. */
   reset() { tiltTarget.x = 0; tiltTarget.z = 0; },
