@@ -160,7 +160,7 @@ To add a new screenshot, add its filename to that `Images:` line. When a project
 - **Laptop:** everything comes from `src/content/projects.ts`. Keep the `Project N:` headings and the `Overview:`, `Problem:`, `Approach:`, `Implementation:`, `Results:`, `Findings:`, `Tech:`, `GitHub:`, `Live demo:` labels. A project's GitHub link is what shows the "Public" badge and the clone command. The "coming soon" slots come from the `Projects 4+` line.
 - **Education:** `src/content/education.ts`. The wall card uses the first degree's title, university, place and years, plus its status in brackets, e.g. `(in progress)`.
 - **My Journey:** `src/content/experience.ts`, newest role first. Each role starts with `Role, Company, Place, Mon YYYY – Mon YYYY` and is followed by its bullet lines and a `Tools:` line.
-- **Research:** `src/content/research.ts`. Replace `[PLACEHOLDER]` after `Paper title:`, `Plain-English summary`, and `My contribution:`. The wall preview then shows the real title.
+- **Research:** `src/content/research.ts`. Replace `[PLACEHOLDER]` after `Paper title:`, `Plain-English summary:`, and `My contribution:`. The wall preview then shows the real title. Keep each label before the colon exactly as it is: labels can only contain letters, spaces and hyphens, so a label like `Summary (2 sentences):` would be ignored.
 
 ---
 

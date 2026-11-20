@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
-import { AmbientLight, Box3, CanvasTexture, DirectionalLight, Group, HemisphereLight, Matrix4, Mesh, MeshStandardMaterial, Object3D, Plane, PlaneGeometry, Quaternion, Ray, SRGBColorSpace, Vector2, Vector3 } from 'three';
+import { AmbientLight, Box3, CanvasTexture, Color, DirectionalLight, Group, HemisphereLight, Matrix4, Mesh, MeshStandardMaterial, Object3D, Plane, PlaneGeometry, Quaternion, Ray, SRGBColorSpace, Vector2, Vector3 } from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { SceneLabel } from './SceneLabel';
 import { useSafeTexture } from './RoomObjects';
@@ -26,18 +26,24 @@ function useHoverCursor(cursor = 'pointer') {
 }
 
 // ── Lights: normal room lighting, gently dimmed while the gallery is open ─────────────────────
+/** The sky behind the room at night, and the moonlight that comes through the window. */
+export const NIGHT_SKY = '#1e2536';
+const MOON = new Color('#9fb2dc'); const tmpSun = new Color();
+
 export function SceneLights({ evening, gallery, colours }: { evening: boolean; gallery: boolean; colours: { paper: string; sage: string } }) {
   const amb = useRef<AmbientLight>(null); const hemi = useRef<HemisphereLight>(null); const sun = useRef<DirectionalLight>(null);
   useFrame(({ scene }, dt) => {
     const a = ease(dt, 3); const dim = gallery ? 0.38 : 1;
-    scene.environmentIntensity += ((gallery ? 0.3 : 1) - scene.environmentIntensity) * a; // the room's ambient reflections
-    if (amb.current) amb.current.intensity += ((evening ? 0.75 : 1.1) * dim - amb.current.intensity) * a;
-    if (hemi.current) hemi.current.intensity += (1.4 * dim - hemi.current.intensity) * a;
-    if (sun.current) sun.current.intensity += ((evening ? 1.4 : 2.5) * dim - sun.current.intensity) * a;
+    // Night: the room's ambient light drops right down and the window light turns to cool moonlight,
+    // so the desk lamp becomes the warm centre of the room.
+    scene.environmentIntensity += ((gallery ? 0.3 : evening ? 0.32 : 1) - scene.environmentIntensity) * a; // ambient reflections
+    if (amb.current) amb.current.intensity += ((evening ? 0.3 : 1.1) * dim - amb.current.intensity) * a;
+    if (hemi.current) hemi.current.intensity += ((evening ? 0.5 : 1.4) * dim - hemi.current.intensity) * a;
+    if (sun.current) { sun.current.intensity += ((evening ? 0.9 : 2.5) * dim - sun.current.intensity) * a; sun.current.color.lerp(evening ? MOON : tmpSun.set(colours.paper), a); }
   });
   return <>
     <ambientLight ref={amb} intensity={evening ? 0.75 : 1.1} />
-    <hemisphereLight ref={hemi} args={[colours.paper, colours.sage, 1.4]} />
+    <hemisphereLight ref={hemi} args={[colours.paper, colours.sage, 1.4]} color={evening ? '#8fa0c8' : colours.paper} />
     <directionalLight ref={sun} position={[-3, 8, 6]} intensity={evening ? 1.4 : 2.5} color={colours.paper} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-8} shadow-camera-right={8} shadow-camera-top={8} shadow-camera-bottom={-8} />
   </>;
 }
@@ -130,6 +136,41 @@ export function Ball({ reduced }: { reduced: boolean }) {
     <sphereGeometry args={[R, 32, 24]} /><meshStandardMaterial map={tex} roughness={0.55} />
     {hover && !sim.dragging && <SceneLabel position={[0, 0.4, 0]}><div className="tooltip-label">Drag and throw me</div></SceneLabel>}
   </mesh>;
+}
+
+// ── The rug as a football pitch ─────────────────────────────────────────────────────────────
+/**
+ * White pitch markings painted flat on the green rug (3.5 × 2.45, centred at z 0.7): touchlines and
+ * goal lines, the halfway line, centre circle and spot, penalty and goal boxes, penalty spots and a
+ * goal outline behind each goal line. Flat, so the ball rolls straight over them.
+ */
+export function FootballPitch({ colour }: { colour: string }) {
+  const Y = 0.0592, W = 0.028, Z0 = 0.7, L = 1.62, H = 1.08; // line height, width; centre; half length, half width
+  const mat = useMemo(() => new MeshStandardMaterial({ color: colour, roughness: 0.9 }), [colour]);
+  // A straight line between two points along x or z.
+  const line = (x1: number, z1: number, x2: number, z2: number, key: string) => {
+    const along = Math.abs(x2 - x1) > Math.abs(z2 - z1);
+    const len = (along ? Math.abs(x2 - x1) : Math.abs(z2 - z1)) + W;
+    return <mesh key={key} material={mat} position={[(x1 + x2) / 2, Y, (z1 + z2) / 2]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry args={along ? [len, W] : [W, len]} /></mesh>;
+  };
+  const box = (x: number, depth: number, half: number, key: string) => { // a three-sided box opening onto the goal line
+    const inner = x - Math.sign(x) * depth;
+    return [line(inner, Z0 - half, inner, Z0 + half, key + 'a'), line(x, Z0 - half, inner, Z0 - half, key + 'b'), line(x, Z0 + half, inner, Z0 + half, key + 'c')];
+  };
+  const goal = (x: number, key: string) => { // the goal itself, just behind the goal line
+    const back = x + Math.sign(x) * 0.09;
+    return [line(back, Z0 - 0.22, back, Z0 + 0.22, key + 'a'), line(x, Z0 - 0.22, back, Z0 - 0.22, key + 'b'), line(x, Z0 + 0.22, back, Z0 + 0.22, key + 'c')];
+  };
+  const spot = (x: number, r: number, key: string) => <mesh key={key} material={mat} position={[x, Y, Z0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[r, 20]} /></mesh>;
+  return <group>
+    {line(-L, Z0 - H, L, Z0 - H, 't1')}{line(-L, Z0 + H, L, Z0 + H, 't2')}
+    {line(-L, Z0 - H, -L, Z0 + H, 'g1')}{line(L, Z0 - H, L, Z0 + H, 'g2')}
+    {line(0, Z0 - H, 0, Z0 + H, 'half')}
+    <mesh material={mat} position={[0, Y, Z0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[0.31 - W / 2, 0.31 + W / 2, 56]} /></mesh>
+    {spot(0, 0.035, 'cs')}
+    {[-L, L].map(x => [...box(x, 0.5, 0.56, `p${x}`), ...box(x, 0.18, 0.27, `s${x}`), ...goal(x, `n${x}`), spot(x - Math.sign(x) * 0.36, 0.022, `ps${x}`)])}
+  </group>;
 }
 
 // ── Room tilt ───────────────────────────────────────────────────────────────────────────────

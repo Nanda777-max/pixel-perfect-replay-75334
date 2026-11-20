@@ -17,8 +17,8 @@ function Sky({ evening }: { evening: boolean }) {
     vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
     fragmentShader: 'uniform vec3 top; uniform vec3 horizon; varying vec3 vDir; void main(){ float h = clamp(vDir.y*1.6+0.08,0.0,1.0); gl_FragColor = vec4(mix(horizon, top, pow(h,0.7)),1.0); }',
   }), [uniforms]);
-  uniforms.top.value.set(evening ? '#5f6f86' : '#9fb7c4');
-  uniforms.horizon.value.set(evening ? '#e7b48f' : '#e9e6d8');
+  uniforms.top.value.set(evening ? '#141c30' : '#9fb7c4');
+  uniforms.horizon.value.set(evening ? '#4c4766' : '#e9e6d8');
   return <mesh material={material} renderOrder={-1}><sphereGeometry args={[90, 32, 16]} /></mesh>;
 }
 
@@ -44,10 +44,10 @@ void main(){
 function Water({ evening, reduced }: { evening: boolean; reduced: boolean }) {
   const uniforms = useMemo(() => ({ time: { value: 0 }, deep: { value: new Color() }, shallow: { value: new Color() }, sky: { value: new Color() }, fogColor: { value: new Color() }, fogNear: { value: 28 }, fogFar: { value: 110 } }), []);
   const material = useMemo(() => new ShaderMaterial({ vertexShader: waterVertex, fragmentShader: waterFragment, uniforms }), [uniforms]);
-  uniforms.deep.value.set(evening ? '#24434d' : '#1f5a63');
-  uniforms.shallow.value.set(evening ? '#3f6d6c' : '#3f8a85');
-  uniforms.sky.value.set(evening ? '#c9a58f' : '#c9d6d6');
-  uniforms.fogColor.value.set(evening ? '#d9b49a' : '#dfe3da');
+  uniforms.deep.value.set(evening ? '#0c1a26' : '#1f5a63');
+  uniforms.shallow.value.set(evening ? '#1c3340' : '#3f8a85');
+  uniforms.sky.value.set(evening ? '#3d4466' : '#c9d6d6');
+  uniforms.fogColor.value.set(evening ? '#2c3149' : '#dfe3da');
   useFrame((_, dt) => { if (!reduced) uniforms.time.value += Math.min(dt, 0.05); });
   return <mesh material={material} rotation={[-Math.PI / 2, 0, 0]} position={[0, SEA, -45]}><planeGeometry args={[160, 80, 120, 60]} /></mesh>;
 }
@@ -126,13 +126,13 @@ function Balcony() {
 }
 
 export function OutdoorWindow({ evening, reduced, position, size }: { evening: boolean; reduced: boolean; position: [number, number, number]; size: [number, number] }) {
-  const fog = evening ? '#d9b49a' : '#dfe3da';
+  const fog = evening ? '#2c3149' : '#dfe3da';
   return <mesh position={position} raycast={() => null}>
     <planeGeometry args={size} />
     <MeshPortalMaterial resolution={256} blur={0}>
       <fog attach="fog" args={[fog, 28, 110]} />
-      <hemisphereLight args={[evening ? '#f2c9a5' : '#e8eef0', '#4a5e3e', evening ? 1.2 : 1.8]} />
-      <directionalLight position={[-6, 10, -4]} intensity={evening ? 0.8 : 1.6} color={evening ? '#ffc58f' : '#fff6e6'} />
+      <hemisphereLight args={[evening ? '#7d8bb5' : '#e8eef0', '#4a5e3e', evening ? 0.55 : 1.8]} />
+      <directionalLight position={[-6, 10, -4]} intensity={evening ? 0.45 : 1.6} color={evening ? '#aebde6' : '#fff6e6'} />
       <Sky evening={evening} />
       <Water evening={evening} reduced={reduced} />
       <Coast reduced={reduced} />

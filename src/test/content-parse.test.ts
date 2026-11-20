@@ -32,7 +32,9 @@ describe('content parsers', () => {
   it('reads research and leaves unsupplied fields empty', () => {
     const r = parseResearch();
     expect(r.link).toBe('https://ieeexplore.ieee.org/document/10528136');
-    expect(r.title).toBeUndefined();
+    expect(r.title).toBe('Compact Diplexer Using Electromagnetic Bandgap Resonators for C and X Band Radar Systems');
+    expect(r.summary).toMatch(/^A diplexer/);
+    expect(r.contribution).toBeUndefined(); // still to be supplied
     expect(r.figurePath).toBe('/images/projects/ieee-figure.png');
   });
 });

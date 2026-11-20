@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { Environment, Lightformer, OrbitControls, useGLTF } from '@react-three/drei';
-import { Box3, Color, Group, Mesh, Vector3, type Object3D } from 'three';
+import { Box3, Color, Group, Mesh, MeshStandardMaterial, Vector3, type Object3D } from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Button } from '@/components/ui/button';
 import type { Section } from '@/content/room';
@@ -12,7 +12,7 @@ import { Curtains } from './Curtains';
 import { FramedDisplay, GlobeTable, LaptopScreen, PortraitFrame, PosterWall, Turntable, WarmLamp } from './RoomObjects';
 import { drawEducationCard, drawJourneyTimeline, drawResearchPreview } from './frameArt';
 import { frameImages } from '@/content/parse';
-import { Ball, DeskAccessories, DeskWithDrawer, EaselArt, MemoryCabinet, Plants, RoomTiltInput, SceneLights, TiltingRoom, WallClock } from './RoomLife';
+import { Ball, DeskAccessories, DeskWithDrawer, EaselArt, FootballPitch, MemoryCabinet, NIGHT_SKY, Plants, RoomTiltInput, SceneLights, TiltingRoom, WallClock } from './RoomLife';
 import { useRoomTilt } from '@/lib/room-tilt';
 import { withBase } from '@/content/media';
 import desk from '@/assets/models/desk.glb.asset.json';
@@ -29,8 +29,9 @@ import table from '@/assets/models/sideTable.glb.asset.json';
 type Vec=[number,number,number];
 interface RoomProps{openDrawer:string|null;onDrawer:(id:string|null)=>void;onSelect:(id:Section,index?:number)=>void;reset:number;evening:boolean;lampOn:boolean;onLamp:()=>void;zoom:number;selected:Section|null}
 const focusPoints:Partial<Record<Section,Vec>>={projects:[-1.2,1.5,-1.8],notebook:[-2,1.5,-1.5],education:[-1.45,2.7,-3.3],experience:[-.15,2.7,-3.3],research:[2.05,2.7,-3.3],guestbook:[1,2.3,-3],books:[3,1.8,-2],music:[3.1,.9,.4],artwork:[-3,1.5,1],travel:[2.5,1.1,2.3],posters:[-4,2.6,.35],about:[-1.9,1.6,-2.5],balcony:[-3,1.6,-2]};
-function Model({url,position,height,rotation=0,onClick,label='Take a closer look',children}:{url:string;position:Vec;height:number;rotation?:number;onClick?:()=>void;label?:string;children?:React.ReactNode}){
- const {scene}=useGLTF(withBase(url));const {clone,k,offset}=useMemo(()=>{const c=scene.clone(true);const bounds=new Box3().setFromObject(c);const size=bounds.getSize(new Vector3());const centre=bounds.getCenter(new Vector3());const k=height/size.y;const offset=new Vector3(-centre.x*k,-bounds.min.y*k,-centre.z*k);c.position.copy(offset);c.scale.setScalar(k);c.traverse((o:Object3D)=>{if(o instanceof Mesh){o.castShadow=true;o.receiveShadow=true;}});return {clone:c,k,offset};},[scene,height]);
+/** A GLB model scaled to `height`. `tint` recolours this copy only (its materials are cloned first). */
+function Model({url,position,height,rotation=0,onClick,label='Take a closer look',tint,children}:{url:string;position:Vec;height:number;rotation?:number;onClick?:()=>void;label?:string;tint?:string;children?:React.ReactNode}){
+ const {scene}=useGLTF(withBase(url));const {clone,k,offset}=useMemo(()=>{const c=scene.clone(true);const bounds=new Box3().setFromObject(c);const size=bounds.getSize(new Vector3());const centre=bounds.getCenter(new Vector3());const k=height/size.y;const offset=new Vector3(-centre.x*k,-bounds.min.y*k,-centre.z*k);c.position.copy(offset);c.scale.setScalar(k);c.traverse((o:Object3D)=>{if(o instanceof Mesh){o.castShadow=true;o.receiveShadow=true;if(tint){const m=(o.material as MeshStandardMaterial).clone();m.color.set(tint);m.roughness=Math.min(m.roughness,.5);o.material=m;}}});return {clone:c,k,offset};},[scene,height,tint]);
  const [hover,setHover]=useState(false);const lift=useRef<Group>(null);
  useFrame((_,dt)=>{if(lift.current)lift.current.position.y+=((hover&&onClick?.03:0)-lift.current.position.y)*(1-Math.exp(-10*Math.min(dt,.05)));});
  return <group position={position} rotation={[0,rotation,0]} onClick={e=>{if(onClick){e.stopPropagation();onClick();}}} onPointerOver={e=>{if(onClick){e.stopPropagation();setHover(true);document.body.style.cursor='pointer';}}} onPointerOut={()=>{setHover(false);document.body.style.cursor='auto';}}><group ref={lift}><primitive object={clone}/>{children&&<group position={offset} scale={k}>{children}</group>}</group>{hover&&<SceneLabel position={[0,height+.15,0]}><div className="tooltip-label">{label}</div></SceneLabel>}</group>;
@@ -63,7 +64,7 @@ function CameraRig({reset,zoom,selected}:Pick<RoomProps,'reset'|'zoom'|'selected
 }
 function Scene(props:RoomProps&{ready:()=>void;reduced:boolean}){const {onSelect,evening,lampOn,onLamp,reduced}=props;const [colours]=useState(()=>Object.fromEntries(['wood','wood-light','room-wall','sage','rose','butter','ink','paper','scene-background'].map(k=>[k,new Color(tokenColour(k))])));const c=(k:string)=>colours[k]?.getStyle()??'white';const textures=useMemo(()=>({wood:roomTexture('wood'),paper:roomTexture('paper'),rug:roomTexture('rug')}),[]);const ready=useRef(false);const tilting=useRoomTilt();
  useFrame(()=>{if(!ready.current){ready.current=true;requestAnimationFrame(props.ready);}});
- return <><color attach="background" args={[c('scene-background')]}/><SceneLights evening={evening} gallery={props.selected==='artwork'} colours={{paper:c('paper'),sage:c('sage')}}/><Environment resolution={64}><Lightformer position={[0,5,0]} scale={[10,10,1]} intensity={2}/><Lightformer position={[-5,2,0]} rotation-y={Math.PI/2} scale={[10,5,1]} intensity={1} color={c('sage')}/></Environment>
+ return <><color attach="background" args={[evening?NIGHT_SKY:c('scene-background')]}/><SceneLights evening={evening} gallery={props.selected==='artwork'} colours={{paper:c('paper'),sage:c('sage')}}/><Environment resolution={64}><Lightformer position={[0,5,0]} scale={[10,10,1]} intensity={2}/><Lightformer position={[-5,2,0]} rotation-y={Math.PI/2} scale={[10,5,1]} intensity={1} color={c('sage')}/></Environment>
  {/* Everything physical sits inside the tilting room: tipping it changes the ball's gravity. */}
  <TiltingRoom reduced={reduced}>
  <Block at={[0,-.2,0]} size={[8.6,.35,7]} colour={c('wood')} texture={textures.wood}/><Block at={[0,-.01,0]} size={[8.4,.05,6.8]} colour={c('wood-light')} texture={textures.wood}/>
@@ -73,10 +74,10 @@ function Scene(props:RoomProps&{ready:()=>void;reduced:boolean}){const {onSelect
  {/* A wide, glazed monsoon opening. */}
  <Block at={[-3.15,3.7,-3.5]} size={[2.3,.2,.25]} colour={c('wood')}/><Block at={[-3.15,.5,-3.5]} size={[2.3,.18,.35]} colour={c('wood')}/>{[-4.2,-3.15,-2.1].map(x=><Block key={x} at={[x,2.1,-3.5]} size={[.09,3.2,.2]} colour={c('wood')}/>)}<Block at={[-3.15,2,-3.5]} size={[2.3,.08,.15]} colour={c('wood')}/>
  <OutdoorWindow evening={evening} reduced={reduced} position={[-3.15,2.1,-3.52]} size={[2.12,3.12]}/><Curtains left={-4.22} right={-2.08} top={3.82} bottom={.6} z={-3.2} reduced={reduced}/>
- <Block at={[0,.04,.7]} size={[3.5,.035,2.45]} colour={c('sage')} texture={textures.rug}/>{[-1.65,1.65].map(x=><Block key={x} at={[x,.065,.7]} size={[.025,.012,2.3]} colour={c('paper')}/>)}
+ <Block at={[0,.04,.7]} size={[3.5,.035,2.45]} colour={c('sage')} texture={textures.rug}/><FootballPitch colour={c('paper')}/>
  <Suspense fallback={null}>
  <DeskWithDrawer url={desk.url} position={[-1.65,0,-2.35]} height={1.38} openDrawer={props.openDrawer} onDrawer={props.onDrawer} onSelect={onSelect} reduced={reduced}/><DeskAccessories/><Model url={laptop.url} position={[-1.15,1.39,-2.2]} height={.58} rotation={.16} onClick={()=>onSelect('projects')} label="Things I’ve built — open my workspace"><LaptopScreen/></Model><Model url={chair.url} position={[-1.55,0,-.9]} height={1.4} rotation={Math.PI+.2}/><WarmLamp url={lamp.url} position={[-2.6,1.4,-2.35]} height={.65} on={lampOn} onToggle={onLamp} reduced={reduced}/><PortraitFrame position={[-1.98,1.385,-2.66]} rotation={.3} onSelect={onSelect}/>
- <Model url={shelf.url} position={[3.2,0,-2.5]} height={2.6} onClick={()=>onSelect('books')} label="My bookshelf — open the library"/>{[.4,1.05,1.7].map((y,i)=><Model key={y} url={books.url} position={[3.1,y,-2.4]} height={.38} rotation={i*.13} onClick={()=>onSelect('books')} label="My bookshelf — open the library"/>)}
+ <Model url={shelf.url} position={[3.2,0,-2.5]} height={2.6} tint="#6b2a1c" onClick={()=>onSelect('books')} label="My bookshelf — open the library"/>{[.4,1.05,1.7].map((y,i)=><Model key={y} url={books.url} position={[3.1,y,-2.4]} height={.38} rotation={i*.13} onClick={()=>onSelect('books')} label="My bookshelf — open the library"/>)}
  <Model url={seat.url} position={[1.7,0,1.35]} height={1.3} rotation={-.6}/><Model url={table.url} position={[3.15,0,.45]} height={.8}/><Model url={plant.url} position={[-3.65,0,-2.5]} height={1.4}/><Model url={plant.url} position={[3.6,0,2.6]} height={1.45}/><Model url={smallPlant.url} position={[-.4,1.4,-2.5]} height={.42}/>
  </Suspense>
  <ObjectGroup at={[-2.05,1.45,-1.93]} id="notebook" onSelect={onSelect} label="Notes to myself"><Block at={[0,0,0]} size={[.65,.025,.42]} colour={c('paper')} rotation={[0,-.17,0]} texture={textures.paper}/><Block at={[0,.02,0]} size={[.01,.008,.42]} colour={c('wood')}/></ObjectGroup>

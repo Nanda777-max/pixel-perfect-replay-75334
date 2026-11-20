@@ -149,7 +149,7 @@
 .lb-window{--bw:172px;--bh:258px;--bd:44px;--w2:240px;position:relative;width:min(1200px,100%);height:min(860px,100%);overflow:hidden;border-radius:14px;display:flex;flex-direction:column;color:var(--foreground);background:linear-gradient(180deg,#f2e7d0 0%,#ead9b8 58%,#dcc39b 100%);box-shadow:0 30px 90px oklch(.2 .03 60 / .45),0 0 0 8px oklch(.58 .081 57 / .9),0 0 0 9px oklch(.45 .07 57)}
 .lb-room{position:absolute;inset:0;pointer-events:none}
 .lb-window-light{position:absolute;left:4%;top:7%;width:22%;height:56%;border-radius:120px 120px 6px 6px;background:radial-gradient(ellipse at 50% 40%,#fff8e6 0%,#fbe7b9 45%,transparent 75%),repeating-linear-gradient(90deg,transparent 0 calc(50% - 3px),#a8875c 0 calc(50% + 3px),transparent 0 100%),repeating-linear-gradient(0deg,transparent 0 calc(33% - 3px),#a8875c 0 33%);border:8px solid #a8875c;opacity:.55;filter:blur(1px);box-shadow:0 0 120px 60px #fff1cf66}
-.lb-shelves{position:absolute;right:3%;top:5%;width:24%;height:70%;opacity:.24;filter:blur(1.2px);background:repeating-linear-gradient(0deg,#7a5434 0 10px,transparent 10px 96px),repeating-linear-gradient(90deg,#5b6e5a 0 9px,#b88c62 9px 17px,#8a4f3d 17px 24px,#d8c8a4 24px 30px,transparent 30px 38px);border-left:10px solid #7a5434;border-right:10px solid #7a5434}
+.lb-shelves{position:absolute;right:3%;top:5%;width:24%;height:70%;opacity:.24;filter:blur(1.2px);background:repeating-linear-gradient(0deg,#6b2a1c 0 10px,transparent 10px 96px),repeating-linear-gradient(90deg,#5b6e5a 0 9px,#b88c62 9px 17px,#8a4f3d 17px 24px,#d8c8a4 24px 30px,transparent 30px 38px);border-left:10px solid #6b2a1c;border-right:10px solid #6b2a1c} /* mahogany, matching the bookshelf in the room */
 .lb-header{position:relative;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0}
 .lb-title{position:relative;z-index:2;text-align:center;padding:6px 20px 0;transition:opacity .4s}
 .lb-title h2{font-family:var(--font-display);font-weight:500;font-size:clamp(40px,6vw,74px);line-height:1;margin:10px 0 10px;color:#2c2a22}.lb-title h2 em{font-style:italic;color:var(--primary)}
@@ -177,7 +177,7 @@
 .lb-cover-design{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px 14px;text-align:center;font-family:var(--font-display);background-image:linear-gradient(90deg,oklch(0 0 0 / .14),transparent 12%)}
 .lb-cover-design strong{font-size:20px;font-weight:500;line-height:1.15}.lb-cover-design em{font-size:13px;opacity:.85}
 .lb-cover-rule{width:46%;height:5px;border-top:1px solid currentColor;border-bottom:1px solid currentColor;opacity:.55}
-.lb-ledge{width:min(980px,100%);height:24px;margin-top:-2px;border-radius:3px;background:linear-gradient(180deg,#b58457 0%,#9a6b45 45%,#6f4a2d 100%);box-shadow:0 18px 30px -8px oklch(.25 .05 50 / .55),inset 0 2px 0 oklch(1 0 0 / .25)}
+.lb-ledge{width:min(980px,100%);height:24px;margin-top:-2px;border-radius:3px;background:linear-gradient(180deg,#94493a 0%,#6b2a1c 45%,#45170e 100%);box-shadow:0 18px 30px -8px oklch(.25 .05 50 / .55),inset 0 2px 0 oklch(1 0 0 / .25)}
 .lb-hint{margin:16px 0 0;font-size:12.5px;color:#5d5546;text-align:center}.lb-link{background:none;border:0;padding:4px;font:inherit;color:var(--primary);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .lb-shelf-nav{display:flex;gap:10px;margin-top:12px}.lb-shelf-nav button{width:44px;height:44px;border-radius:50%;background:color-mix(in oklch,var(--background) 80%,transparent)}
 /* Reading: the room dims and the book opens. */
@@ -211,7 +211,7 @@
  .lb-reading{grid-template-columns:1fr;align-content:start;gap:26px;padding:64px 18px 32px}
  .lb-notes{max-width:none}.lb-spread{margin-top:6px}
  .lb-page{padding:18px 14px}.lb-page-right blockquote{font-size:16px}.lb-leaf-back h3{font-size:19px}.lb-page-quiet{font-size:15px}
- .lb-row{overflow-x:auto;overflow-y:visible;justify-content:flex-start;padding:0 calc(var(--bw) / 2)}
+ .lb-row{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;justify-content:flex-start;padding:0 calc(var(--bw) / 2)} /* sideways swipe only: a pulled-out book must not add a vertical scrollbar */
 }
 @media(prefers-reduced-motion:reduce){.lb-spread,.lb-cover-leaf,.lb-book,.lb-slot{transition:none!important}}
 
